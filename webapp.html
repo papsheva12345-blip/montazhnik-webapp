@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Монтажник — настройки</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #0A0F1A;
+    --purple: #8B5CF6;
+    --purple-light: #D8B4FE;
+    --white: #FAFAF8;
+    --black: #1A1A1A;
+    --gold: #A16207;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 24px 20px 100px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .subtext {
+    font-size: 13px;
+    color: #9CA3AF;
+    margin: 0 0 28px;
+  }
+  .block {
+    margin-bottom: 28px;
+  }
+  .label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #9CA3AF;
+    margin-top: 6px;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #2A2F3A;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--purple);
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(139,92,246,0.2);
+  }
+  .swatches {
+    display: flex;
+    gap: 12px;
+  }
+  .swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .swatch.selected {
+    border-color: var(--purple-light);
+  }
+  .options {
+    display: flex;
+    gap: 10px;
+  }
+  .opt {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    border-radius: 12px;
+    background: #151B29;
+    color: var(--white);
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .opt.selected {
+    border-color: var(--purple);
+    background: rgba(139,92,246,0.15);
+    color: var(--purple-light);
+  }
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 20px 24px;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+  }
+  button {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+    border: none;
+    background: var(--purple);
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Настройки монтажа</h1>
+  <p class="subtext">Обрезка и стиль субтитров для этого ролика</p>
+
+  <div class="block">
+    <span class="label">Обрезка (сек)</span>
+    <input type="range" id="trimRange" min="1" max="60" value="15">
+    <div class="row">
+      <span>1 сек</span>
+      <span id="trimValue">15 сек</span>
+      <span>60 сек</span>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Цвет субтитров</span>
+    <div class="swatches" id="colorSwatches">
+      <div class="swatch selected" style="background:#FAFAF8" data-color="#FAFAF8"></div>
+      <div class="swatch" style="background:#D8B4FE" data-color="#D8B4FE"></div>
+      <div class="swatch" style="background:#A16207" data-color="#A16207"></div>
+      <div class="swatch" style="background:#8B5CF6" data-color="#8B5CF6"></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Позиция субтитров</span>
+    <div class="options" id="positionOptions">
+      <div class="opt selected" data-pos="bottom">Внизу</div>
+      <div class="opt" data-pos="top">Вверху</div>
+      <div class="opt" data-pos="center">По центру</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button id="submitBtn">Начать монтаж</button>
+  </div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  const trimRange = document.getElementById('trimRange');
+  const trimValue = document.getElementById('trimValue');
+  trimRange.addEventListener('input', () => {
+    trimValue.textContent = trimRange.value + ' сек';
+  });
+
+  let selectedColor = '#FAFAF8';
+  document.querySelectorAll('.swatch').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedColor = el.dataset.color;
+    });
+  });
+
+  let selectedPosition = 'bottom';
+  document.querySelectorAll('.opt').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedPosition = el.dataset.pos;
+    });
+  });
+
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const data = {
+      trim_seconds: parseInt(trimRange.value, 10),
+      subtitle_color: selectedColor,
+      subtitle_position: selectedPosition
+    };
+    tg.sendData(JSON.stringify(data));
+    tg.close();
+  });
+</script>
+
+</body>
+</html>
