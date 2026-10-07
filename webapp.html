@@ -181,6 +181,7 @@
       <span id="trimValue">до 60 сек</span>
       <span>3 мин</span>
     </div>
+    <div class="hint">Если ролик получится длиннее, уберу второстепенные фразы, начало и конец сохраню.</div>
   </div>
 
   <div class="block">
@@ -192,6 +193,24 @@
       <div class="opt" data-value="strong">Сильно</div>
     </div>
     <div class="hint" id="pausesHint"></div>
+  </div>
+
+  <div class="block">
+    <span class="label">Убирать запинки и слова-паразиты</span>
+    <div class="options" data-group="remove_fillers">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">«Э-э», «м-м», «ну», «короче», «как бы», повторы и оборванные слова.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Убирать неудачные дубли</span>
+    <div class="options" data-group="remove_retakes">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Если фраза сказана несколько раз, оставлю последний вариант.</div>
   </div>
 
   <h2>Субтитры</h2>
@@ -325,7 +344,9 @@
     subtitle_position: 'bottom',
     style: 'plain',
     accent_color: '#4DA3FF',
-    animation: 'dynamic'
+    animation: 'dynamic',
+    remove_fillers: true,
+    remove_retakes: true
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
@@ -374,7 +395,7 @@
         items.forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         const value = el.dataset.value;
-        settings[key] = key === 'caps' ? value === 'true' : value;
+        settings[key] = (value === 'true' || value === 'false') ? value === 'true' : value;
         update();
       });
     });
