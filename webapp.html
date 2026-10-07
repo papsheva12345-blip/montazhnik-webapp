@@ -8,11 +8,11 @@
 <style>
   :root {
     --bg: #0A0F1A;
+    --card: #151B29;
     --purple: #8B5CF6;
     --purple-light: #D8B4FE;
     --white: #FAFAF8;
-    --black: #1A1A1A;
-    --gold: #A16207;
+    --muted: #9CA3AF;
   }
   * { box-sizing: border-box; }
   body {
@@ -22,30 +22,17 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     padding: 24px 20px 100px;
   }
-  h1 {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 0 0 4px;
-  }
-  .subtext {
-    font-size: 13px;
-    color: #9CA3AF;
-    margin: 0 0 28px;
-  }
-  .block {
-    margin-bottom: 28px;
-  }
-  .label {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    display: block;
-  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  h2 { font-size: 16px; font-weight: 600; margin: 32px 0 16px; color: var(--purple-light); }
+  .subtext { font-size: 13px; color: var(--muted); margin: 0 0 20px; }
+  .block { margin-bottom: 24px; }
+  .label { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: block; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
   .row {
     display: flex;
     justify-content: space-between;
     font-size: 13px;
-    color: #9CA3AF;
+    color: var(--muted);
     margin-top: 6px;
   }
   input[type="range"] {
@@ -65,30 +52,29 @@
     cursor: pointer;
     box-shadow: 0 0 0 4px rgba(139,92,246,0.2);
   }
-  .swatches {
-    display: flex;
-    gap: 12px;
-  }
+  .swatches { display: flex; gap: 12px; flex-wrap: wrap; }
   .swatch {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
-  }
-  .swatch.selected {
-    border-color: var(--purple-light);
-  }
-  .options {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--muted);
   }
+  .swatch.off { background: var(--card); }
+  .swatch.selected { border-color: var(--purple-light); box-shadow: 0 0 0 2px var(--bg) inset; }
+  .options { display: flex; gap: 8px; flex-wrap: wrap; }
   .opt {
-    flex: 1;
-    padding: 12px 0;
+    flex: 1 1 0;
+    min-width: 70px;
+    padding: 12px 4px;
     text-align: center;
     border-radius: 12px;
-    background: #151B29;
+    background: var(--card);
     color: var(--white);
     font-size: 13px;
     cursor: pointer;
@@ -99,6 +85,34 @@
     background: rgba(139,92,246,0.15);
     color: var(--purple-light);
   }
+  .fonts .opt { font-size: 15px; }
+
+  /* Предпросмотр: кадр 9:16 с примером субтитров */
+  .preview {
+    position: relative;
+    width: 150px;
+    aspect-ratio: 9 / 16;
+    margin: 0 auto;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #3B4A6B 0%, #7A6A8F 45%, #C9A97E 100%);
+  }
+  .preview-text {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .preview-text .box {
+    background: rgba(0,0,0,0.62);
+    padding: 1px 4px;
+    border-radius: 3px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
   .footer {
     position: fixed;
     bottom: 0;
@@ -123,39 +137,108 @@
 <body>
 
   <h1>Настройки монтажа</h1>
-  <p class="subtext">Обрезка и стиль субтитров для этого ролика</p>
+  <p class="subtext">Обрезка, паузы и стиль субтитров. Настройки запоминаются.</p>
+
+  <div class="preview" id="preview">
+    <div class="preview-text" id="previewText"></div>
+  </div>
+
+  <h2>Монтаж</h2>
 
   <div class="block">
-    <span class="label">Обрезка (сек)</span>
-    <input type="range" id="trimRange" min="1" max="60" value="15">
+    <span class="label">Длина ролика</span>
+    <input type="range" id="trimRange" min="5" max="180" step="5" value="60">
     <div class="row">
-      <span>1 сек</span>
-      <span id="trimValue">15 сек</span>
-      <span>60 сек</span>
+      <span>5 сек</span>
+      <span id="trimValue">до 60 сек</span>
+      <span>3 мин</span>
     </div>
   </div>
 
   <div class="block">
-    <span class="label">Цвет субтитров</span>
-    <div class="swatches" id="colorSwatches">
-      <div class="swatch selected" style="background:#FAFAF8" data-color="#FAFAF8"></div>
-      <div class="swatch" style="background:#D8B4FE" data-color="#D8B4FE"></div>
-      <div class="swatch" style="background:#A16207" data-color="#A16207"></div>
-      <div class="swatch" style="background:#8B5CF6" data-color="#8B5CF6"></div>
+    <span class="label">Вырезать паузы</span>
+    <div class="options" data-group="pauses">
+      <div class="opt" data-value="off">Нет</div>
+      <div class="opt" data-value="soft">Мягко</div>
+      <div class="opt" data-value="normal">Средне</div>
+      <div class="opt" data-value="strong">Сильно</div>
+    </div>
+    <div class="hint" id="pausesHint"></div>
+  </div>
+
+  <h2>Субтитры</h2>
+
+  <div class="block">
+    <span class="label">Шрифт</span>
+    <div class="options fonts" data-group="font">
+      <div class="opt" data-value="arial" style="font-family: Arial, sans-serif">Arial</div>
+      <div class="opt" data-value="impact" style="font-family: Impact, 'Arial Black', sans-serif">Impact</div>
+      <div class="opt" data-value="verdana" style="font-family: Verdana, sans-serif">Verdana</div>
+      <div class="opt" data-value="georgia" style="font-family: Georgia, serif">Georgia</div>
+      <div class="opt" data-value="comic" style="font-family: 'Comic Sans MS', cursive">Comic</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Размер текста</span>
+    <div class="options" data-group="size">
+      <div class="opt" data-value="small">Маленький</div>
+      <div class="opt" data-value="medium">Средний</div>
+      <div class="opt" data-value="large">Крупный</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Цвет текста</span>
+    <div class="swatches" data-group="subtitle_color">
+      <div class="swatch" style="background:#FAFAF8" data-value="#FAFAF8"></div>
+      <div class="swatch" style="background:#FFE14D" data-value="#FFE14D"></div>
+      <div class="swatch" style="background:#D8B4FE" data-value="#D8B4FE"></div>
+      <div class="swatch" style="background:#8B5CF6" data-value="#8B5CF6"></div>
+      <div class="swatch" style="background:#A16207" data-value="#A16207"></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Обводка</span>
+    <div class="options" data-group="outline">
+      <div class="opt" data-value="none">Нет</div>
+      <div class="opt" data-value="thin">Тонкая</div>
+      <div class="opt" data-value="thick">Толстая</div>
+      <div class="opt" data-value="box">Плашка</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Подсветка слова, которое звучит</span>
+    <div class="swatches" data-group="highlight">
+      <div class="swatch off" data-value="off">нет</div>
+      <div class="swatch" style="background:#FFE14D" data-value="#FFE14D"></div>
+      <div class="swatch" style="background:#4ADE80" data-value="#4ADE80"></div>
+      <div class="swatch" style="background:#F87171" data-value="#F87171"></div>
+      <div class="swatch" style="background:#D8B4FE" data-value="#D8B4FE"></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Буквы</span>
+    <div class="options" data-group="caps">
+      <div class="opt" data-value="false">Обычные</div>
+      <div class="opt" data-value="true">ЗАГЛАВНЫЕ</div>
     </div>
   </div>
 
   <div class="block">
     <span class="label">Позиция субтитров</span>
-    <div class="options" id="positionOptions">
-      <div class="opt selected" data-pos="bottom">Внизу</div>
-      <div class="opt" data-pos="top">Вверху</div>
-      <div class="opt" data-pos="center">По центру</div>
+    <div class="options" data-group="subtitle_position">
+      <div class="opt" data-value="top">Вверху</div>
+      <div class="opt" data-value="center">По центру</div>
+      <div class="opt" data-value="bottom">Внизу</div>
     </div>
   </div>
 
   <div class="footer">
-    <button id="submitBtn">Начать монтаж</button>
+    <button id="submitBtn">Сохранить и начать монтаж</button>
   </div>
 
 <script>
@@ -163,37 +246,125 @@
   tg.ready();
   tg.expand();
 
+  const STORAGE_KEY = 'montazhnik_settings';
+  const DEFAULTS = {
+    trim_seconds: 60,
+    pauses: 'normal',
+    font: 'arial',
+    size: 'medium',
+    subtitle_color: '#FAFAF8',
+    outline: 'thick',
+    highlight: 'off',
+    caps: false,
+    subtitle_position: 'bottom'
+  };
+  const FONT_CSS = {
+    arial: 'Arial, sans-serif',
+    impact: "Impact, 'Arial Black', sans-serif",
+    verdana: 'Verdana, sans-serif',
+    georgia: 'Georgia, serif',
+    comic: "'Comic Sans MS', cursive"
+  };
+  const SIZE_PX = { small: 9, medium: 12, large: 15 };
+  const OUTLINE_PX = { none: 0, thin: 0.6, thick: 1.4 };
+  const PAUSE_HINTS = {
+    off: 'Паузы останутся как есть.',
+    soft: 'Убираю только длинные паузы — больше секунды.',
+    normal: 'Убираю паузы длиннее полсекунды.',
+    strong: 'Убираю почти все паузы — динамичный ролик.'
+  };
+
+  // Восстанавливаем прошлые настройки, если они сохранены на этом телефоне
+  let settings = { ...DEFAULTS };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    settings = { ...DEFAULTS, ...saved };
+  } catch (e) {}
+
+  function saveLocal() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
+  }
+
+  // Кнопки выбора: в каждой группе выделен один вариант
+  document.querySelectorAll('[data-group]').forEach(group => {
+    const key = group.dataset.group;
+    const items = group.querySelectorAll('[data-value]');
+    const current = String(settings[key]);
+    items.forEach(el => {
+      el.classList.toggle('selected', el.dataset.value === current);
+      el.addEventListener('click', () => {
+        items.forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        const value = el.dataset.value;
+        settings[key] = key === 'caps' ? value === 'true' : value;
+        update();
+      });
+    });
+  });
+
   const trimRange = document.getElementById('trimRange');
   const trimValue = document.getElementById('trimValue');
+  trimRange.value = settings.trim_seconds;
   trimRange.addEventListener('input', () => {
-    trimValue.textContent = trimRange.value + ' сек';
+    settings.trim_seconds = parseInt(trimRange.value, 10);
+    update();
   });
 
-  let selectedColor = '#FAFAF8';
-  document.querySelectorAll('.swatch').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedColor = el.dataset.color;
-    });
-  });
+  function formatSeconds(s) {
+    if (s < 60) return s + ' сек';
+    const m = Math.floor(s / 60), r = s % 60;
+    return m + ' мин' + (r ? ' ' + r + ' сек' : '');
+  }
 
-  let selectedPosition = 'bottom';
-  document.querySelectorAll('.opt').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedPosition = el.dataset.pos;
+  function renderPreview() {
+    const el = document.getElementById('previewText');
+    const words = ['Так', 'выглядят', 'ваши', 'субтитры'];
+    const highlighted = 1;
+
+    el.style.fontFamily = FONT_CSS[settings.font];
+    el.style.fontSize = SIZE_PX[settings.size] + 'px';
+    el.style.color = settings.subtitle_color;
+    el.style.textTransform = settings.caps ? 'uppercase' : 'none';
+
+    const w = OUTLINE_PX[settings.outline];
+    if (settings.outline === 'box') {
+      el.style.textShadow = 'none';
+    } else if (w) {
+      el.style.textShadow = [[-w,-w],[w,-w],[-w,w],[w,w],[0,w],[0,-w],[w,0],[-w,0]]
+        .map(([x, y]) => `${x}px ${y}px 0 #000`).join(',');
+    } else {
+      el.style.textShadow = '1px 1px 2px rgba(0,0,0,0.7)';
+    }
+
+    el.innerHTML = '';
+    const container = document.createElement('span');
+    if (settings.outline === 'box') container.className = 'box';
+    words.forEach((word, i) => {
+      const span = document.createElement('span');
+      span.textContent = word;
+      if (i === highlighted && settings.highlight !== 'off') span.style.color = settings.highlight;
+      container.appendChild(span);
+      if (i < words.length - 1) container.appendChild(document.createTextNode(' '));
     });
-  });
+    el.appendChild(container);
+
+    el.style.top = el.style.bottom = el.style.transform = '';
+    if (settings.subtitle_position === 'top') el.style.top = '8%';
+    else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
+    else el.style.bottom = '8%';
+  }
+
+  function update() {
+    trimValue.textContent = 'до ' + formatSeconds(settings.trim_seconds);
+    document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
+    renderPreview();
+    saveLocal();
+  }
+  update();
 
   document.getElementById('submitBtn').addEventListener('click', () => {
-    const data = {
-      trim_seconds: parseInt(trimRange.value, 10),
-      subtitle_color: selectedColor,
-      subtitle_position: selectedPosition
-    };
-    tg.sendData(JSON.stringify(data));
+    saveLocal();
+    tg.sendData(JSON.stringify(settings));
     tg.close();
   });
 </script>
