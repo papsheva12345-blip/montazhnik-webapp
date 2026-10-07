@@ -100,6 +100,19 @@
     overflow: hidden;
     background: linear-gradient(160deg, #3B4A6B 0%, #7A6A8F 45%, #C9A97E 100%);
   }
+  .preview-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding: 8px 0 10px;
+    height: 320px;
+    transition: height 0.2s ease;
+  }
+  .preview-wrap .preview { transform-origin: top center; transition: transform 0.2s ease; }
+  /* Когда листаешь вниз, пример уменьшается, чтобы не занимать пол-экрана */
+  .preview-wrap.compact { height: 214px; }
+  .preview-wrap.compact .preview { transform: scale(0.64); }
   .preview-text {
     position: absolute;
     left: 6%;
@@ -167,106 +180,11 @@
   <h1>Настройки монтажа</h1>
   <p class="subtext">Обрезка, паузы и стиль субтитров. Настройки запоминаются.</p>
 
-  <div class="preview" id="preview">
-    <div class="preview-text" id="previewText"></div>
-  </div>
-
-  <h2>Монтаж</h2>
-
-  <div class="block">
-    <span class="label">Длина ролика</span>
-    <input type="range" id="trimRange" min="5" max="180" step="5" value="60">
-    <div class="row">
-      <span>5 сек</span>
-      <span id="trimValue">до 60 сек</span>
-      <span>3 мин</span>
+  <!-- Пример субтитров остаётся вверху экрана, пока листаешь настройки -->
+  <div class="preview-wrap" id="previewWrap">
+    <div class="preview" id="preview">
+      <div class="preview-text" id="previewText"></div>
     </div>
-    <div class="hint">Если ролик получится длиннее, уберу второстепенные фразы, начало и конец сохраню.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Вырезать паузы</span>
-    <div class="options" data-group="pauses">
-      <div class="opt" data-value="off">Нет</div>
-      <div class="opt" data-value="soft">Мягко</div>
-      <div class="opt" data-value="normal">Средне</div>
-      <div class="opt" data-value="strong">Сильно</div>
-    </div>
-    <div class="hint" id="pausesHint"></div>
-  </div>
-
-  <div class="block">
-    <span class="label">Убирать запинки и слова-паразиты</span>
-    <div class="options" data-group="remove_fillers">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">«Э-э», «м-м», «ну», «короче», «как бы», повторы и оборванные слова.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Убирать неудачные дубли</span>
-    <div class="options" data-group="remove_retakes">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">Если фраза сказана несколько раз, оставлю последний вариант.</div>
-  </div>
-
-  <h2>Эффекты</h2>
-
-  <div class="block">
-    <span class="label">Наезд камеры в начале</span>
-    <div class="options" data-group="camera_intro">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">Первые секунды кадр плавно приближается — взгляд цепляется сразу.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Движение камеры</span>
-    <div class="options" data-group="camera_motion">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">На смене фраз и склейках кадр то приближается, то отдаляется, как в Reels.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Придумать хук к видео</span>
-    <div class="options" data-group="hook">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">ИИ придумает цепляющую фразу по смыслу ролика и крупно покажет её в начале.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Эмодзи в субтитрах</span>
-    <div class="options" data-group="emoji">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">ИИ подберёт эмодзи по смыслу и поставит над субтитрами — не к каждой фразе, а там, где уместно.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Звуковые эффекты</span>
-    <div class="options" data-group="sound_effects">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">Короткий щелчок на смене кадра и когда появляется главное слово.</div>
-  </div>
-
-  <div class="block">
-    <span class="label">Медиа-карточки</span>
-    <div class="options" data-group="media_cards">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
   </div>
 
   <h2>Субтитры</h2>
@@ -400,6 +318,104 @@
       <div class="opt" data-value="center">По центру</div>
       <div class="opt" data-value="bottom">Внизу</div>
     </div>
+  </div>
+
+  <h2>Монтаж</h2>
+
+  <div class="block">
+    <span class="label">Длина ролика</span>
+    <input type="range" id="trimRange" min="5" max="180" step="5" value="60">
+    <div class="row">
+      <span>5 сек</span>
+      <span id="trimValue">до 60 сек</span>
+      <span>3 мин</span>
+    </div>
+    <div class="hint">Если ролик получится длиннее, уберу второстепенные фразы, начало и конец сохраню.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Вырезать паузы</span>
+    <div class="options" data-group="pauses">
+      <div class="opt" data-value="off">Нет</div>
+      <div class="opt" data-value="soft">Мягко</div>
+      <div class="opt" data-value="normal">Средне</div>
+      <div class="opt" data-value="strong">Сильно</div>
+    </div>
+    <div class="hint" id="pausesHint"></div>
+  </div>
+
+  <div class="block">
+    <span class="label">Убирать запинки и слова-паразиты</span>
+    <div class="options" data-group="remove_fillers">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">«Э-э», «м-м», «ну», «короче», «как бы», повторы и оборванные слова.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Убирать неудачные дубли</span>
+    <div class="options" data-group="remove_retakes">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Если фраза сказана несколько раз, оставлю последний вариант.</div>
+  </div>
+
+  <h2>Эффекты</h2>
+
+  <div class="block">
+    <span class="label">Наезд камеры в начале</span>
+    <div class="options" data-group="camera_intro">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Первые секунды кадр плавно приближается — взгляд цепляется сразу.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Движение камеры</span>
+    <div class="options" data-group="camera_motion">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">На смене фраз и склейках кадр то приближается, то отдаляется, как в Reels.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Придумать хук к видео</span>
+    <div class="options" data-group="hook">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ придумает цепляющую фразу по смыслу ролика и крупно покажет её в начале.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Эмодзи в субтитрах</span>
+    <div class="options" data-group="emoji">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ подберёт эмодзи по смыслу и поставит над субтитрами — не к каждой фразе, а там, где уместно.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Звуковые эффекты</span>
+    <div class="options" data-group="sound_effects">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Короткий щелчок на смене кадра и когда появляется главное слово.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Медиа-карточки</span>
+    <div class="options" data-group="media_cards">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
   </div>
 
   <div class="footer">
@@ -668,5 +684,14 @@
   });
 </script>
 
+<script>
+  (function () {
+    const wrap = document.getElementById('previewWrap');
+    const start = wrap.offsetTop;
+    window.addEventListener('scroll', () => {
+      wrap.classList.toggle('compact', window.scrollY > start + 40);
+    }, { passive: true });
+  })();
+</script>
 </body>
 </html>
