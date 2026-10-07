@@ -232,6 +232,7 @@
   <div class="block" id="pairOnly">
     <span class="label">Цвет акцента</span>
     <div class="options scroller" data-group="accent_color">
+      <div class="opt" data-value="#F57C1F"><span class="dot" style="background:#F57C1F"></span>Оранжевый 🔥</div>
       <div class="opt" data-value="#EFFF00"><span class="dot" style="background:#EFFF00"></span>Лимонный 🔥</div>
       <div class="opt" data-value="#F7EEA8"><span class="dot" style="background:#F7EEA8"></span>Ванильный 🔥</div>
       <div class="opt" data-value="#FFB020"><span class="dot" style="background:#FFB020"></span>Янтарь</div>
@@ -322,6 +323,7 @@
   <div class="block">
     <span class="label">Позиция субтитров</span>
     <div class="options" data-group="subtitle_position">
+      <div class="opt" data-value="auto">Авто</div>
       <div class="opt" data-value="top">Вверху</div>
       <div class="opt" data-value="center">По центру</div>
       <div class="opt" data-value="bottom">Внизу</div>
@@ -347,7 +349,7 @@
     outline: 'thick',
     highlight: 'off',
     caps: false,
-    subtitle_position: 'bottom',
+    subtitle_position: 'auto',
     style: 'plain',
     accent_color: '#4DA3FF',
     animation: 'dynamic',
@@ -437,7 +439,7 @@
     el.innerHTML = '';
     const lead = document.createElement('span');
     lead.className = 'pair-lead';
-    lead.style.fontSize = Math.max(10, base * 0.5) + 'px';
+    lead.style.fontSize = Math.max(10, base * 0.6) + 'px';
     lead.textContent = 'Каждая твоя';
     const accent = document.createElement('span');
     accent.className = 'pair-accent';
@@ -446,8 +448,13 @@
     accent.style.fontStyle = style.italic ? 'italic' : 'normal';
     accent.style.color = settings.accent_color;
     accent.textContent = style.caps ? 'ИСТОРИЯ' : 'история';
+    const tail = document.createElement('span');
+    tail.className = 'pair-lead';
+    tail.style.fontSize = lead.style.fontSize;
+    tail.textContent = 'важна';
     el.appendChild(lead);
     el.appendChild(accent);
+    el.appendChild(tail);
   }
 
   function renderPreview() {
@@ -500,7 +507,10 @@
 
   function placePreview(el) {
     el.style.top = el.style.bottom = el.style.transform = '';
-    if (settings.subtitle_position === 'top') el.style.top = '8%';
+    // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
+    const top = settings.subtitle_position === 'top'
+      || (settings.subtitle_position === 'auto' && PAIR_STYLES[settings.style]);
+    if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
     else el.style.bottom = '8%';
   }
