@@ -213,6 +213,35 @@
     <div class="hint">Если фраза сказана несколько раз, оставлю последний вариант.</div>
   </div>
 
+  <h2>Эффекты</h2>
+
+  <div class="block">
+    <span class="label">Наезд камеры в начале</span>
+    <div class="options" data-group="camera_intro">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Первые секунды кадр плавно приближается — взгляд цепляется сразу.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Движение камеры</span>
+    <div class="options" data-group="camera_motion">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">На смене фраз и склейках кадр то приближается, то отдаляется, как в Reels.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Придумать хук к видео</span>
+    <div class="options" data-group="hook">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ придумает цепляющую фразу по смыслу ролика и крупно покажет её в начале.</div>
+  </div>
+
   <h2>Субтитры</h2>
 
   <div class="block">
@@ -361,7 +390,10 @@
     animation: 'dynamic',
     remove_fillers: true,
     remove_retakes: true,
-    pair_outline: false
+    pair_outline: false,
+    camera_intro: true,
+    camera_motion: true,
+    hook: false
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
