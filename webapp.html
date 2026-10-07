@@ -7,7 +7,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=Montserrat&family=PT+Sans&family=PT+Serif:ital@1&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=Montserrat:wght@500&family=PT+Sans&family=PT+Serif:ital@1&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
   :root {
     --bg: #0A0F1A;
@@ -468,12 +468,13 @@
       lead.style.fontFamily = tail.style.fontFamily = "'Montserrat', sans-serif";
       lead.style.fontSize = tail.style.fontSize = (base * 0.74) + 'px';
       lead.style.lineHeight = tail.style.lineHeight = '1';
+      lead.style.fontWeight = tail.style.fontWeight = '500';
       lead.textContent = 'Вышел убийца всех';
       tail.textContent = 'Reels Telegram';
       accent.style.lineHeight = '0.82';
       accent.style.display = 'flex';
       accent.style.justifyContent = 'center';  // длинное слово центрируем, пока не сжато
-      accent.style.webkitTextStroke = (base * 0.04) + 'px ' + settings.accent_color;
+      accent.style.webkitTextStroke = (base * 0.05) + 'px ' + settings.accent_color;
       accent.style.textShadow = settings.pair_outline ? outlineShadow(1) : 'none';
       accent.innerHTML = '<span class="stretch" style="display:inline-block">МОНТАЖЁРОВ</span>';
     }
