@@ -242,6 +242,11 @@
       <div class="opt" data-value="#C084FC"><span class="dot" style="background:#C084FC"></span>Сирень</div>
       <div class="opt" data-value="#FFFFFF"><span class="dot" style="background:#FFFFFF"></span>Белый</div>
     </div>
+    <span class="label" style="margin-top:14px">Обводка букв</span>
+    <div class="options" data-group="pair_outline">
+      <div class="opt" data-value="false">Без обводки</div>
+      <div class="opt" data-value="true">С обводкой</div>
+    </div>
   </div>
 
   <div class="block">
@@ -354,7 +359,8 @@
     accent_color: '#4DA3FF',
     animation: 'dynamic',
     remove_fillers: true,
-    remove_retakes: true
+    remove_retakes: true,
+    pair_outline: false
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
@@ -435,7 +441,7 @@
     el.style.fontSize = '';
     el.style.color = '#FFFFFF';
     el.style.textTransform = 'none';
-    el.style.textShadow = outlineShadow(0.6) + ', 1px 2px 3px rgba(0,0,0,0.6)';
+    el.style.textShadow = '1px 2px 3px rgba(0,0,0,0.6)';
     el.innerHTML = '';
     const lead = document.createElement('span');
     lead.className = 'pair-lead';
@@ -447,6 +453,9 @@
     accent.style.fontSize = (base * style.scale) + 'px';
     accent.style.fontStyle = style.italic ? 'italic' : 'normal';
     accent.style.color = settings.accent_color;
+    accent.style.textShadow = settings.pair_outline
+      ? outlineShadow(style.caps && style.scale > 1 ? 0.6 : 1) + ', 1px 2px 3px rgba(0,0,0,0.6)'
+      : '1px 2px 3px rgba(0,0,0,0.6)';
     accent.textContent = style.caps ? 'ИСТОРИЯ' : 'история';
     const tail = document.createElement('span');
     tail.className = 'pair-lead';
