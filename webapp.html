@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Монтажник — настройки</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=PT+Sans&family=PT+Serif:ital@1&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
   :root {
     --bg: #0A0F1A;
@@ -90,7 +93,7 @@
   /* Предпросмотр: кадр 9:16 с примером субтитров */
   .preview {
     position: relative;
-    width: 150px;
+    width: 180px;
     aspect-ratio: 9 / 16;
     margin: 0 auto;
     border-radius: 14px;
@@ -112,6 +115,31 @@
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
   }
+
+  /* Горизонтальная лента выбора стиля, как в приложениях монтажа */
+  .scroller {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .scroller::-webkit-scrollbar { display: none; }
+  .scroller .opt { flex: 0 0 auto; min-width: 0; padding: 12px 16px; font-size: 15px; }
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .pair-lead { display: block; font-family: 'PT Sans', sans-serif; font-weight: 400; }
+  .pair-accent { display: block; line-height: 1.05; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .anim .pair-lead, .anim .plain-line { animation: fadeIn 0.25s ease-out both; }
+  .anim .pair-accent { animation: pop 0.3s 0.08s ease-out both; }
 
   .footer {
     position: fixed;
@@ -169,6 +197,42 @@
   <h2>Субтитры</h2>
 
   <div class="block">
+    <span class="label">Стиль</span>
+    <div class="options scroller" data-group="style">
+      <div class="opt" data-value="plain">Обычные</div>
+      <div class="opt" data-value="nouveau" style="font-family: 'Poiret One', sans-serif">Nouveau</div>
+      <div class="opt" data-value="billboard" style="font-family: 'Russo One', sans-serif">Billboard</div>
+      <div class="opt" data-value="modernist" style="font-family: 'Rubik Mono One', sans-serif; font-size: 12px">Modernist</div>
+      <div class="opt" data-value="feather" style="font-family: 'Marck Script', cursive">Feather</div>
+      <div class="opt" data-value="lobster" style="font-family: 'Lobster', cursive">Lobster</div>
+      <div class="opt" data-value="classic" style="font-family: 'PT Serif', serif; font-style: italic">Classic</div>
+    </div>
+    <div class="hint" id="styleHint"></div>
+  </div>
+
+  <div class="block" id="pairOnly">
+    <span class="label">Цвет акцента</span>
+    <div class="options scroller" data-group="accent_color">
+      <div class="opt" data-value="#FFB020"><span class="dot" style="background:#FFB020"></span>Янтарь</div>
+      <div class="opt" data-value="#4DA3FF"><span class="dot" style="background:#4DA3FF"></span>Лазурь</div>
+      <div class="opt" data-value="#A3E635"><span class="dot" style="background:#A3E635"></span>Лайм</div>
+      <div class="opt" data-value="#EF4444"><span class="dot" style="background:#EF4444"></span>Багровый</div>
+      <div class="opt" data-value="#C084FC"><span class="dot" style="background:#C084FC"></span>Сирень</div>
+      <div class="opt" data-value="#FFFFFF"><span class="dot" style="background:#FFFFFF"></span>Белый</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="label">Оформление</span>
+    <div class="options" data-group="animation">
+      <div class="opt" data-value="dynamic">Динамичное</div>
+      <div class="opt" data-value="static">Статичное</div>
+    </div>
+  </div>
+
+  <div id="plainOnly">
+
+  <div class="block">
     <span class="label">Шрифт</span>
     <div class="options fonts" data-group="font">
       <div class="opt" data-value="arial" style="font-family: Arial, sans-serif">Arial</div>
@@ -176,15 +240,6 @@
       <div class="opt" data-value="verdana" style="font-family: Verdana, sans-serif">Verdana</div>
       <div class="opt" data-value="georgia" style="font-family: Georgia, serif">Georgia</div>
       <div class="opt" data-value="comic" style="font-family: 'Comic Sans MS', cursive">Comic</div>
-    </div>
-  </div>
-
-  <div class="block">
-    <span class="label">Размер текста</span>
-    <div class="options" data-group="size">
-      <div class="opt" data-value="small">Маленький</div>
-      <div class="opt" data-value="medium">Средний</div>
-      <div class="opt" data-value="large">Крупный</div>
     </div>
   </div>
 
@@ -228,6 +283,17 @@
     </div>
   </div>
 
+  </div>
+
+  <div class="block">
+    <span class="label">Размер текста</span>
+    <div class="options" data-group="size">
+      <div class="opt" data-value="small">Маленький</div>
+      <div class="opt" data-value="medium">Средний</div>
+      <div class="opt" data-value="large">Крупный</div>
+    </div>
+  </div>
+
   <div class="block">
     <span class="label">Позиция субтитров</span>
     <div class="options" data-group="subtitle_position">
@@ -256,7 +322,19 @@
     outline: 'thick',
     highlight: 'off',
     caps: false,
-    subtitle_position: 'bottom'
+    subtitle_position: 'bottom',
+    style: 'plain',
+    accent_color: '#4DA3FF',
+    animation: 'dynamic'
+  };
+  // Парные стили: шрифт главного слова и заглавные ли буквы
+  const PAIR_STYLES = {
+    nouveau: { font: "'Poiret One', sans-serif", caps: true, scale: 1.2 },
+    billboard: { font: "'Russo One', sans-serif", caps: true, scale: 1 },
+    modernist: { font: "'Rubik Mono One', sans-serif", caps: true, scale: 0.85 },
+    feather: { font: "'Marck Script', cursive", caps: false, scale: 1.1 },
+    lobster: { font: "'Lobster', cursive", caps: false, scale: 1 },
+    classic: { font: "'PT Serif', serif", caps: false, scale: 1, italic: true }
   };
   const FONT_CSS = {
     arial: 'Arial, sans-serif',
@@ -265,7 +343,7 @@
     georgia: 'Georgia, serif',
     comic: "'Comic Sans MS', cursive"
   };
-  const SIZE_PX = { small: 9, medium: 12, large: 15 };
+  const SIZE_PX = { small: 11, medium: 14, large: 17 };
   const OUTLINE_PX = { none: 0, thin: 0.6, thick: 1.4 };
   const PAUSE_HINTS = {
     off: 'Паузы останутся как есть.',
@@ -316,8 +394,44 @@
     return m + ' мин' + (r ? ' ' + r + ' сек' : '');
   }
 
+  function outlineShadow(w) {
+    return [[-w,-w],[w,-w],[-w,w],[w,w],[0,w],[0,-w],[w,0],[-w,0]]
+      .map(([x, y]) => `${x}px ${y}px 0 #000`).join(',');
+  }
+
+  function renderPairPreview(el) {
+    const style = PAIR_STYLES[settings.style];
+    const base = SIZE_PX[settings.size] * 1.45;
+    el.style.fontFamily = '';
+    el.style.fontSize = '';
+    el.style.color = '#FFFFFF';
+    el.style.textTransform = 'none';
+    el.style.textShadow = outlineShadow(0.6) + ', 1px 2px 3px rgba(0,0,0,0.6)';
+    el.innerHTML = '';
+    const lead = document.createElement('span');
+    lead.className = 'pair-lead';
+    lead.style.fontSize = Math.max(10, base * 0.5) + 'px';
+    lead.textContent = 'Каждая твоя';
+    const accent = document.createElement('span');
+    accent.className = 'pair-accent';
+    accent.style.fontFamily = style.font;
+    accent.style.fontSize = (base * style.scale) + 'px';
+    accent.style.fontStyle = style.italic ? 'italic' : 'normal';
+    accent.style.color = settings.accent_color;
+    accent.textContent = style.caps ? 'ИСТОРИЯ' : 'история';
+    el.appendChild(lead);
+    el.appendChild(accent);
+  }
+
   function renderPreview() {
     const el = document.getElementById('previewText');
+    el.classList.remove('anim');
+    if (PAIR_STYLES[settings.style]) {
+      renderPairPreview(el);
+      placePreview(el);
+      replayAnimation(el);
+      return;
+    }
     const words = ['Так', 'выглядят', 'ваши', 'субтитры'];
     const highlighted = 1;
 
@@ -338,7 +452,7 @@
 
     el.innerHTML = '';
     const container = document.createElement('span');
-    if (settings.outline === 'box') container.className = 'box';
+    container.className = 'plain-line' + (settings.outline === 'box' ? ' box' : '');
     words.forEach((word, i) => {
       const span = document.createElement('span');
       span.textContent = word;
@@ -347,7 +461,17 @@
       if (i < words.length - 1) container.appendChild(document.createTextNode(' '));
     });
     el.appendChild(container);
+    placePreview(el);
+    replayAnimation(el);
+  }
 
+  function replayAnimation(el) {
+    if (settings.animation !== 'dynamic') return;
+    void el.offsetWidth;  // перезапуск CSS-анимации при каждом изменении
+    el.classList.add('anim');
+  }
+
+  function placePreview(el) {
     el.style.top = el.style.bottom = el.style.transform = '';
     if (settings.subtitle_position === 'top') el.style.top = '8%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
@@ -357,6 +481,12 @@
   function update() {
     trimValue.textContent = 'до ' + formatSeconds(settings.trim_seconds);
     document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
+    const isPair = Boolean(PAIR_STYLES[settings.style]);
+    document.getElementById('pairOnly').style.display = isPair ? '' : 'none';
+    document.getElementById('plainOnly').style.display = isPair ? 'none' : '';
+    document.getElementById('styleHint').textContent = isPair
+      ? 'Парные субтитры: слова сверху, главное слово крупно и цветом.'
+      : 'Обычные субтитры: свой шрифт, цвет, обводка и подсветка слова.';
     renderPreview();
     saveLocal();
   }
