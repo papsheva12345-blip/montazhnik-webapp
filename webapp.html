@@ -7,7 +7,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=Montserrat:wght@500&family=PT+Sans&family=PT+Serif:ital@1&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=Montserrat:wght@500;900&family=Unbounded:wght@800&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@1,700&family=Oswald:wght@700&family=PT+Sans&family=PT+Serif:ital@1&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
   :root {
     --bg: #0A0F1A;
@@ -273,6 +273,16 @@
       <div class="opt" data-value="feather" style="font-family: 'Marck Script', cursive">Feather</div>
       <div class="opt" data-value="lobster" style="font-family: 'Lobster', cursive">Lobster</div>
       <div class="opt" data-value="classic" style="font-family: 'PT Serif', serif; font-style: italic">Classic</div>
+      <div class="opt" data-value="widescreen" style="font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 11px">Widescreen</div>
+      <div class="opt" data-value="notebook" style="font-family: 'Caveat', cursive; font-weight: 600; font-size: 17px">Notebook</div>
+      <div class="opt" data-value="silk" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17px">Silk</div>
+      <div class="opt" data-value="heavyweight" style="font-family: 'Montserrat', sans-serif; font-weight: 900">Heavyweight</div>
+      <div class="opt" data-value="marble" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: 1px">MARBLE</div>
+      <div class="opt" data-value="invitation" style="font-family: 'Great Vibes', cursive; font-size: 18px">Invitation</div>
+      <div class="opt" data-value="boardwalk" style="font-family: 'Pacifico', cursive">Boardwalk</div>
+      <div class="opt" data-value="decoline" style="font-family: 'Poiret One', sans-serif; font-weight: 700">Deco Line</div>
+      <div class="opt" data-value="editorial" style="font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700">Editorial</div>
+      <div class="opt" data-value="chisel" style="font-family: 'Oswald', sans-serif; font-weight: 700">CHISEL</div>
     </div>
     <div class="hint" id="styleHint"></div>
   </div>
@@ -423,7 +433,17 @@
     feather: { font: "'Marck Script', cursive", caps: false, scale: 1.1 },
     lobster: { font: "'Lobster', cursive", caps: false, scale: 1 },
     classic: { font: "'PT Serif', serif", caps: false, scale: 1, italic: true },
-    deco: { font: "'Poiret One', sans-serif", caps: true, scale: 1.7, stretch: true }
+    deco: { font: "'Poiret One', sans-serif", caps: true, scale: 1.7, stretch: true },
+    widescreen: { font: "'Unbounded', sans-serif", caps: true, scale: 0.8, weight: 800 },
+    notebook: { font: "'Caveat', cursive", caps: false, scale: 1.4, weight: 600 },
+    silk: { font: "'Cormorant Garamond', serif", caps: false, scale: 1.35, italic: true, weight: 500 },
+    heavyweight: { font: "'Montserrat', sans-serif", caps: true, scale: 0.95, weight: 900 },
+    marble: { font: "'Cormorant Garamond', serif", caps: true, scale: 1, weight: 600, spacing: 0.08 },
+    invitation: { font: "'Great Vibes', cursive", caps: false, scale: 1.7 },
+    boardwalk: { font: "'Pacifico', cursive", caps: false, scale: 1.1 },
+    decoline: { font: "'Poiret One', sans-serif", caps: true, scale: 1.2, outlineOnly: true },
+    editorial: { font: "'Playfair Display', serif", caps: false, scale: 1.1, italic: true, weight: 700 },
+    chisel: { font: "'Oswald', sans-serif", caps: true, scale: 1.35, weight: 700 }
   };
   const FONT_CSS = {
     arial: 'Arial, sans-serif',
@@ -507,10 +527,18 @@
     accent.style.fontSize = (base * style.scale) + 'px';
     accent.style.fontStyle = style.italic ? 'italic' : 'normal';
     accent.style.color = settings.accent_color;
+    accent.style.fontWeight = style.weight || 400;
+    accent.style.letterSpacing = style.spacing ? style.spacing + 'em' : 'normal';
     accent.style.textShadow = settings.pair_outline
       ? outlineShadow(style.caps && style.scale > 1 ? 0.6 : 1) + ', 1px 2px 3px rgba(0,0,0,0.6)'
       : '1px 2px 3px rgba(0,0,0,0.6)';
     accent.textContent = style.caps ? 'ИСТОРИЯ' : 'история';
+    if (style.outlineOnly) {
+      // Deco Line: пустые буквы, только контур цвета акцента
+      accent.style.color = 'transparent';
+      accent.style.webkitTextStroke = '1.2px ' + settings.accent_color;
+      accent.style.textShadow = 'none';
+    }
     const tail = document.createElement('span');
     tail.className = 'pair-lead';
     tail.style.fontSize = lead.style.fontSize;
