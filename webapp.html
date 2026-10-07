@@ -419,6 +419,15 @@
     <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
   </div>
 
+  <div class="block">
+    <span class="label">Плашки и карточки</span>
+    <div class="options" data-group="plates">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ выберет 2–3 главные мысли («3 ошибки новичков», «Главный секрет») и покажет их на яркой плашке цвета акцента.</div>
+  </div>
+
   <div class="footer">
     <button id="submitBtn">Сохранить и начать монтаж</button>
   </div>
@@ -450,7 +459,8 @@
     hook: false,
     emoji: false,
     sound_effects: true,
-    media_cards: false
+    media_cards: false,
+    plates: false
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
