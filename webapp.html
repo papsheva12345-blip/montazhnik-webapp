@@ -233,6 +233,7 @@
     <span class="label">Цвет акцента</span>
     <div class="options scroller" data-group="accent_color">
       <div class="opt" data-value="#EFFF00"><span class="dot" style="background:#EFFF00"></span>Лимонный 🔥</div>
+      <div class="opt" data-value="#F7EEA8"><span class="dot" style="background:#F7EEA8"></span>Ванильный 🔥</div>
       <div class="opt" data-value="#FFB020"><span class="dot" style="background:#FFB020"></span>Янтарь</div>
       <div class="opt" data-value="#4DA3FF"><span class="dot" style="background:#4DA3FF"></span>Лазурь</div>
       <div class="opt" data-value="#A3E635"><span class="dot" style="background:#A3E635"></span>Лайм</div>
@@ -268,6 +269,7 @@
     <div class="swatches" data-group="subtitle_color">
       <div class="swatch" style="background:#FAFAF8" data-value="#FAFAF8"></div>
       <div class="swatch" style="background:#EFFF00" data-value="#EFFF00" title="Лимонный"></div>
+      <div class="swatch" style="background:#F7EEA8" data-value="#F7EEA8" title="Ванильный"></div>
       <div class="swatch" style="background:#FFE14D" data-value="#FFE14D"></div>
       <div class="swatch" style="background:#D8B4FE" data-value="#D8B4FE"></div>
       <div class="swatch" style="background:#8B5CF6" data-value="#8B5CF6"></div>
@@ -290,6 +292,7 @@
     <div class="swatches" data-group="highlight">
       <div class="swatch off" data-value="off">нет</div>
       <div class="swatch" style="background:#EFFF00" data-value="#EFFF00" title="Лимонный"></div>
+      <div class="swatch" style="background:#F7EEA8" data-value="#F7EEA8" title="Ванильный"></div>
       <div class="swatch" style="background:#FFE14D" data-value="#FFE14D"></div>
       <div class="swatch" style="background:#4ADE80" data-value="#4ADE80"></div>
       <div class="swatch" style="background:#F87171" data-value="#F87171"></div>
@@ -471,7 +474,7 @@
       el.style.textShadow = [[-w,-w],[w,-w],[-w,w],[w,w],[0,w],[0,-w],[w,0],[-w,0]]
         .map(([x, y]) => `${x}px ${y}px 0 #000`).join(',');
     } else {
-      el.style.textShadow = '1px 1px 2px rgba(0,0,0,0.7)';
+      el.style.textShadow = '2px 2px 3px rgba(0,0,0,0.6)';
     }
 
     el.innerHTML = '';
