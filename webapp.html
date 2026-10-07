@@ -257,7 +257,16 @@
       <div class="opt" data-value="true">Да</div>
       <div class="opt" data-value="false">Нет</div>
     </div>
-    <div class="hint">Тихий «вжух» на смене кадра и мягкий щелчок, когда появляется главное слово.</div>
+    <div class="hint">Короткий щелчок на смене кадра и когда появляется главное слово.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Медиа-карточки</span>
+    <div class="options" data-group="media_cards">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
   </div>
 
   <h2>Субтитры</h2>
@@ -423,7 +432,8 @@
     camera_motion: true,
     hook: false,
     emoji: false,
-    sound_effects: true
+    sound_effects: true,
+    media_cards: false
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
