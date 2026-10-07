@@ -242,6 +242,24 @@
     <div class="hint">ИИ придумает цепляющую фразу по смыслу ролика и крупно покажет её в начале.</div>
   </div>
 
+  <div class="block">
+    <span class="label">Эмодзи в субтитрах</span>
+    <div class="options" data-group="emoji">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">ИИ подберёт эмодзи по смыслу и поставит над субтитрами — не к каждой фразе, а там, где уместно.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Звуковые эффекты</span>
+    <div class="options" data-group="sound_effects">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Тихий «вжух» на смене кадра и мягкий щелчок, когда появляется главное слово.</div>
+  </div>
+
   <h2>Субтитры</h2>
 
   <div class="block">
@@ -393,7 +411,9 @@
     pair_outline: false,
     camera_intro: true,
     camera_motion: true,
-    hook: false
+    hook: false,
+    emoji: false,
+    sound_effects: true
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
