@@ -106,20 +106,38 @@
     z-index: 10;
     background: var(--bg);
     padding: 8px 0 10px;
-    height: 384px;
+    height: 404px;
     transition: height 0.2s ease;
   }
-  .preview-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; }
-  .preview-col { display: flex; flex-direction: column; align-items: center; }
+  /* Карусель: каждый пример — отдельный слайд во всю ширину, листается свайпом */
+  .preview-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .preview-row::-webkit-scrollbar { display: none; }
+  .preview-col {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
   .format-label { font-size: 11px; color: var(--muted); margin-top: 4px; transition: opacity 0.2s; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 6px; }
+  .dots span { width: 6px; height: 6px; border-radius: 50%; background: #3A4256; cursor: pointer; transition: background 0.2s, width 0.2s; }
+  .dots span.active { width: 16px; border-radius: 3px; background: var(--purple-light); }
   /* Горизонтальный пример рисуем в том же масштабе текста (320×180) и уменьшаем вдвое */
-  .land-box { width: 160px; height: 90px; transition: transform 0.2s ease; transform-origin: bottom center; }
-  .preview.land { width: 320px; aspect-ratio: 16 / 9; margin: 0; transform: scale(0.5); transform-origin: top left; }
+  .preview.land { width: 320px; aspect-ratio: 16 / 9; margin: 0; transition: transform 0.2s ease; transform-origin: top center; }
   .preview-wrap .preview:not(.land) { transform-origin: top center; transition: transform 0.2s ease; }
   /* Когда листаешь вниз, примеры уменьшаются, чтобы не занимать пол-экрана */
   .preview-wrap.compact { height: 214px; }
   .preview-wrap.compact .preview:not(.land) { transform: scale(0.64); margin-bottom: -115px; }
-  .preview-wrap.compact .land-box { transform: scale(0.64); }
+  .preview-wrap.compact .preview.land { transform: scale(0.64); margin-bottom: -65px; }
+  .preview-wrap.compact .dots { display: none; }
   .preview-wrap.compact .format-label { opacity: 0; }
   .safe-zone {
     position: absolute;
@@ -217,7 +235,8 @@
 
   <!-- Пример субтитров остаётся вверху экрана, пока листаешь настройки -->
   <div class="preview-wrap" id="previewWrap">
-    <div class="preview-row">
+    <!-- Примеры листаются пальцем, как карусель в Instagram: 9:16, затем 16:9 -->
+    <div class="preview-row" id="carousel">
     <div class="preview-col">
     <div class="preview" id="preview">
       <!-- Рамка-подсказка: безопасная зона Reels. В готовом видео её нет -->
@@ -230,16 +249,17 @@
     </div>
     <!-- Тот же пример для горизонтального видео 16:9 -->
     <div class="preview-col">
-      <div class="land-box">
-        <div class="preview land" id="previewLand">
-          <svg class="safe-zone" viewBox="0 0 1920 1080" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M96 86 H1824 V972 H96 Z" />
-          </svg>
-          <div class="preview-text" id="previewTextLand"></div>
-        </div>
+      <div class="preview land" id="previewLand">
+        <svg class="safe-zone" viewBox="0 0 1920 1080" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M96 86 H1824 V972 H96 Z" />
+        </svg>
+        <div class="preview-text" id="previewTextLand"></div>
       </div>
       <div class="format-label">16:9</div>
     </div>
+    </div>
+    <div class="dots" id="carouselDots">
+      <span class="active" data-slide="0"></span><span data-slide="1"></span>
     </div>
     <p class="safe-hint">Рамка — зона, где текст не закроют кнопки Reels. В готовом видео её нет.</p>
   </div>
@@ -944,6 +964,19 @@
 </script>
 
 <script>
+  (function () {
+    // Точки под каруселью: показывают, какой пример открыт, и переключают по нажатию
+    const carousel = document.getElementById('carousel');
+    const dots = document.querySelectorAll('#carouselDots span');
+    carousel.addEventListener('scroll', () => {
+      const index = Math.round(carousel.scrollLeft / carousel.clientWidth);
+      dots.forEach((d, i) => d.classList.toggle('active', i === index));
+    }, { passive: true });
+    dots.forEach(d => d.addEventListener('click', () => {
+      carousel.scrollTo({ left: carousel.clientWidth * Number(d.dataset.slide), behavior: 'smooth' });
+    }));
+  })();
+
   (function () {
     const wrap = document.getElementById('previewWrap');
     const start = wrap.offsetTop;
