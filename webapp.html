@@ -106,13 +106,23 @@
     z-index: 10;
     background: var(--bg);
     padding: 8px 0 10px;
-    height: 320px;
+    height: 362px;
     transition: height 0.2s ease;
   }
   .preview-wrap .preview { transform-origin: top center; transition: transform 0.2s ease; }
   /* Когда листаешь вниз, пример уменьшается, чтобы не занимать пол-экрана */
   .preview-wrap.compact { height: 214px; }
   .preview-wrap.compact .preview { transform: scale(0.64); }
+  .safe-zone {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .safe-zone path { fill: none; stroke: #F7D3A6; stroke-width: 7; opacity: 0.9; }
+  .safe-hint { font-size: 11px; color: var(--muted); text-align: center; margin: 6px 0 0; }
+  .preview-wrap.compact .safe-hint { display: none; }
   .preview-text {
     position: absolute;
     left: 6%;
@@ -147,8 +157,8 @@
     margin-right: 6px;
     vertical-align: middle;
   }
-  .pair-lead { display: block; font-family: 'PT Sans', sans-serif; font-weight: 400; }
-  .pair-accent { display: block; line-height: 1.05; }
+  .pair-lead { display: block; font-family: 'PT Sans', sans-serif; font-weight: 400;  line-height: 1; }
+  .pair-accent { display: block; line-height: 0.92; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .anim .pair-lead, .anim .plain-line { animation: fadeIn 0.25s ease-out both; }
@@ -200,8 +210,13 @@
   <!-- Пример субтитров остаётся вверху экрана, пока листаешь настройки -->
   <div class="preview-wrap" id="previewWrap">
     <div class="preview" id="preview">
+      <!-- Рамка-подсказка: безопасная зона Reels. В готовом видео её нет -->
+      <svg class="safe-zone" viewBox="0 0 1080 1920" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M78 185 H1003 V1290 H924 V1578 H78 Z" />
+      </svg>
       <div class="preview-text" id="previewText"></div>
     </div>
+    <p class="safe-hint">Рамка — зона, где текст не закроют кнопки Reels. В готовом видео её нет.</p>
   </div>
 
   <h2>Субтитры</h2>
@@ -518,7 +533,7 @@
     georgia: 'Georgia, serif',
     comic: "'Comic Sans MS', cursive"
   };
-  const SIZE_PX = { small: 11, medium: 14, large: 17 };
+  const SIZE_PX = { small: 9, medium: 11, large: 14 };
   const OUTLINE_PX = { none: 0, thin: 0.6, thick: 1.4 };
   const PAUSE_HINTS = {
     off: 'Паузы останутся как есть.',
@@ -613,11 +628,11 @@
       // Deco: крупная строка Montserrat, главное слово высокое и узкое во всю ширину строки
       lead.style.fontFamily = tail.style.fontFamily = "'Montserrat', sans-serif";
       lead.style.fontSize = tail.style.fontSize = (base * 0.74) + 'px';
-      lead.style.lineHeight = tail.style.lineHeight = '1';
+      lead.style.lineHeight = tail.style.lineHeight = '0.92';
       lead.style.fontWeight = tail.style.fontWeight = '500';
       lead.textContent = 'Вышел убийца всех';
       tail.textContent = 'Reels Telegram';
-      accent.style.lineHeight = '0.82';
+      accent.style.lineHeight = '0.76';
       accent.style.display = 'flex';
       accent.style.justifyContent = 'center';  // длинное слово центрируем, пока не сжато
       accent.style.webkitTextStroke = (base * 0.05) + 'px ' + settings.accent_color;
@@ -630,7 +645,9 @@
     if (style.stretch) {
       const inner = accent.querySelector('.stretch');
       const leadWidth = Math.max(measureText(lead), measureText(tail));
-      const ratio = Math.max(0.5, Math.min(1.15, leadWidth / inner.offsetWidth));
+      // Не шире рамки: длинное слово сжимаем сильнее
+      const target = Math.min(leadWidth, el.clientWidth);
+      const ratio = Math.max(0.3, Math.min(1.15, target / inner.offsetWidth));
       inner.style.transform = 'scaleX(' + ratio + ')';
     }
   }
@@ -649,6 +666,7 @@
     const el = document.getElementById('previewText');
     el.classList.remove('anim');
     if (PAIR_STYLES[settings.style]) {
+      placePreview(el);  // сначала место в рамке: от его ширины зависит размер главного слова
       renderPairPreview(el);
       placePreview(el);
       replayAnimation(el);
@@ -695,12 +713,16 @@
 
   function placePreview(el) {
     el.style.top = el.style.bottom = el.style.transform = '';
+    // Текст всегда внутри рамки (как в боте): по бокам отступ от рамки,
+    // внизу справа — ступенька под кнопки Reels, поэтому там текст сдвигаем левее
+    el.style.left = '8.7%';
+    el.style.right = '8.6%';
     // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
     const top = settings.subtitle_position === 'top'
       || (settings.subtitle_position === 'auto' && PAIR_STYLES[settings.style]);
     if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
-    else el.style.bottom = '8%';
+    else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
   }
 
   function update() {
