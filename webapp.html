@@ -718,7 +718,11 @@
   update();
 
   // Адрес бота для загрузки видео бот передаёт в ссылке на приложение (?api=...)
-  const API_URL = new URLSearchParams(location.search).get('api');
+  const PARAMS = new URLSearchParams(location.search);
+  const API_URL = PARAMS.get('api');
+  // Номер пользователя и подпись бот вписывает в ссылку: кнопка внизу чата не передаёт их сама
+  const USER_ID = PARAMS.get('uid');
+  const USER_SIG = PARAMS.get('sig');
   const MAX_VIDEO_MB = 500;
   const submitBtn = document.getElementById('submitBtn');
   const saveOnlyBtn = document.getElementById('saveOnlyBtn');
@@ -757,10 +761,16 @@
       showStatus('Видео больше ' + MAX_VIDEO_MB + ' МБ. Сожмите его или обрежьте и выберите снова.', true);
       return;
     }
+    if (!tg.initData && !USER_SIG) {
+      showStatus('Нажмите в боте «Старт 🚀», откройте приложение заново и попробуйте ещё раз.', true);
+      return;
+    }
     saveLocal();
     const form = new FormData();
-    // Порядок важен: сначала подпись Telegram и настройки, потом сам файл
-    form.append('init_data', tg.initData);
+    // Порядок важен: сначала подпись и настройки, потом сам файл
+    form.append('init_data', tg.initData || '');
+    form.append('uid', USER_ID || '');
+    form.append('sig', USER_SIG || '');
     form.append('settings', JSON.stringify(settings));
     form.append('video', file, file.name);
 
@@ -804,7 +814,7 @@
     xhr.send(form);
   }
 
-  if (API_URL && tg.initData) {
+  if (API_URL) {
     document.getElementById('uploadSection').style.display = '';
     saveOnlyBtn.style.display = 'block';
     videoInput.addEventListener('change', () => { showStatus(''); updateUploadUi(); });
