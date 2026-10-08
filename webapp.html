@@ -505,6 +505,24 @@
     <div class="hint">ИИ выберет 2–3 главные мысли («3 ошибки новичков», «Главный секрет») и покажет их на яркой плашке цвета акцента.</div>
   </div>
 
+  <div class="block">
+    <span class="label">Улучшить качество</span>
+    <div class="options" data-group="enhance">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Убираю шум из звука и выравниваю громкость голоса, делаю картинку чуть чётче и сочнее.</div>
+  </div>
+
+  <div class="block">
+    <span class="label">Стабилизация</span>
+    <div class="options" data-group="stabilize">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Убирает дрожание, если снимали с рук на ходу. Монтаж идёт в 2–3 раза дольше.</div>
+  </div>
+
   <div id="uploadSection" style="display:none">
     <h2>Видео</h2>
     <label class="file-pick" id="filePick" for="videoInput">
@@ -549,7 +567,9 @@
     emoji: false,
     sound_effects: true,
     media_cards: false,
-    plates: false
+    plates: false,
+    enhance: true,
+    stabilize: false
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
