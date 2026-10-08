@@ -23,7 +23,7 @@
     background: var(--bg);
     color: var(--white);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    padding: 24px 20px 100px;
+    padding: 24px 20px 170px;
   }
   h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
   h2 { font-size: 16px; font-weight: 600; margin: 32px 0 16px; color: var(--purple-light); }
@@ -173,6 +173,23 @@
     font-weight: 600;
     cursor: pointer;
   }
+  .file-pick {
+    display: block;
+    padding: 18px 16px;
+    border: 2px dashed var(--purple);
+    border-radius: 14px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .file-pick.chosen { border-style: solid; background: var(--card); }
+  .file-pick b { display: block; font-size: 16px; margin-bottom: 4px; }
+  .file-pick span { font-size: 13px; color: var(--muted); }
+  .progress { height: 8px; border-radius: 4px; background: var(--card); overflow: hidden; margin-bottom: 10px; display: none; }
+  .progress div { height: 100%; width: 0; background: var(--purple-light); transition: width 0.2s; }
+  .status { font-size: 14px; text-align: center; margin-bottom: 10px; display: none; }
+  .status.error { color: #FCA5A5; }
+  button.link { background: none; padding: 10px 0 0; font-weight: 400; color: var(--muted); font-size: 14px; }
+  button:disabled { opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -428,8 +445,20 @@
     <div class="hint">ИИ выберет 2–3 главные мысли («3 ошибки новичков», «Главный секрет») и покажет их на яркой плашке цвета акцента.</div>
   </div>
 
+  <div id="uploadSection" style="display:none">
+    <h2>Видео</h2>
+    <label class="file-pick" id="filePick" for="videoInput">
+      <b id="fileName">📎 Выбрать видео</b>
+      <span id="fileHint">Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до 500 МБ</span>
+    </label>
+    <input type="file" id="videoInput" accept="video/*" hidden>
+  </div>
+
   <div class="footer">
+    <div class="progress" id="progress"><div id="progressBar"></div></div>
+    <div class="status" id="status"></div>
     <button id="submitBtn">Сохранить и начать монтаж</button>
+    <button class="link" id="saveOnlyBtn" style="display:none">Только сохранить настройки</button>
   </div>
 
 <script>
@@ -688,11 +717,109 @@
   }
   update();
 
-  document.getElementById('submitBtn').addEventListener('click', () => {
+  // Адрес бота для загрузки видео бот передаёт в ссылке на приложение (?api=...)
+  const API_URL = new URLSearchParams(location.search).get('api');
+  const MAX_VIDEO_MB = 500;
+  const submitBtn = document.getElementById('submitBtn');
+  const saveOnlyBtn = document.getElementById('saveOnlyBtn');
+  const videoInput = document.getElementById('videoInput');
+  let uploading = false;
+
+  function sendSettings() {
     saveLocal();
     tg.sendData(JSON.stringify(settings));
     tg.close();
-  });
+  }
+
+  function showStatus(text, isError) {
+    const el = document.getElementById('status');
+    el.textContent = text;
+    el.className = 'status' + (isError ? ' error' : '');
+    el.style.display = text ? 'block' : 'none';
+  }
+
+  function chosenFile() {
+    return videoInput.files && videoInput.files[0];
+  }
+
+  function updateUploadUi() {
+    const file = chosenFile();
+    document.getElementById('filePick').classList.toggle('chosen', Boolean(file));
+    document.getElementById('fileName').textContent = file ? '🎬 ' + file.name : '📎 Выбрать видео';
+    document.getElementById('fileHint').textContent = file
+      ? (file.size / 1024 / 1024).toFixed(1) + ' МБ · нажмите, чтобы выбрать другое'
+      : 'Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до ' + MAX_VIDEO_MB + ' МБ';
+    submitBtn.textContent = file ? 'Загрузить и начать монтаж' : '📎 Выбрать видео';
+  }
+
+  function uploadVideo(file) {
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      showStatus('Видео больше ' + MAX_VIDEO_MB + ' МБ. Сожмите его или обрежьте и выберите снова.', true);
+      return;
+    }
+    saveLocal();
+    const form = new FormData();
+    // Порядок важен: сначала подпись Telegram и настройки, потом сам файл
+    form.append('init_data', tg.initData);
+    form.append('settings', JSON.stringify(settings));
+    form.append('video', file, file.name);
+
+    const xhr = new XMLHttpRequest();
+    const bar = document.getElementById('progressBar');
+    document.getElementById('progress').style.display = 'block';
+    bar.style.width = '0';
+    uploading = true;
+    submitBtn.disabled = saveOnlyBtn.disabled = true;
+    if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+    showStatus('Загружаю видео… Не закрывайте приложение.');
+
+    function finish() {
+      uploading = false;
+      submitBtn.disabled = saveOnlyBtn.disabled = false;
+      if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+    }
+    xhr.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const percent = Math.round(e.loaded / e.total * 100);
+      bar.style.width = percent + '%';
+      showStatus('Загружаю видео… ' + percent + '%. Не закрывайте приложение.');
+    };
+    xhr.onload = () => {
+      finish();
+      let answer = {};
+      try { answer = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status === 200 && answer.ok) {
+        bar.style.width = '100%';
+        showStatus('✅ Видео загружено! Готовый ролик придёт в чат через пару минут.');
+        setTimeout(() => tg.close(), 2500);
+      } else {
+        showStatus(answer.error || 'Не получилось загрузить видео (ошибка ' + xhr.status + '). Попробуйте ещё раз.', true);
+      }
+    };
+    xhr.onerror = () => {
+      finish();
+      showStatus('Связь прервалась. Проверьте интернет и попробуйте ещё раз.', true);
+    };
+    xhr.open('POST', API_URL.replace(/\/$/, '') + '/upload');
+    xhr.send(form);
+  }
+
+  if (API_URL && tg.initData) {
+    document.getElementById('uploadSection').style.display = '';
+    saveOnlyBtn.style.display = 'block';
+    videoInput.addEventListener('change', () => { showStatus(''); updateUploadUi(); });
+    updateUploadUi();
+    submitBtn.addEventListener('click', () => {
+      if (uploading) return;
+      const file = chosenFile();
+      if (file) uploadVideo(file);
+      else videoInput.click();
+    });
+    saveOnlyBtn.addEventListener('click', sendSettings);
+  } else {
+    // Старый способ: сохранить настройки, а видео прислать в чат
+    submitBtn.addEventListener('click', sendSettings);
+  }
 </script>
 
 <script>
