@@ -723,6 +723,7 @@
   // Номер пользователя и подпись бот вписывает в ссылку: кнопка внизу чата не передаёт их сама
   const USER_ID = PARAMS.get('uid');
   const USER_SIG = PARAMS.get('sig');
+  const API_BASE = (API_URL || '').replace(/\/$/, '');
   const MAX_VIDEO_MB = 500;
   const submitBtn = document.getElementById('submitBtn');
   const saveOnlyBtn = document.getElementById('saveOnlyBtn');
@@ -756,7 +757,40 @@
     submitBtn.textContent = file ? 'Загрузить и начать монтаж' : '📎 Выбрать видео';
   }
 
-  function uploadVideo(file) {
+  function postJson(path, body) {
+    return fetch(API_BASE + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(r => r.json().catch(() => ({})).then(answer => {
+      if (!r.ok || !answer.ok) throw new Error(answer.error || 'Ошибка сервера ' + r.status);
+      return answer;
+    }));
+  }
+
+  // Один кусок видео; onProgress — сколько байт этого куска уже ушло
+  function sendChunk(uploadId, offset, blob, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', API_BASE + '/upload/chunk?id=' + encodeURIComponent(uploadId) + '&offset=' + offset);
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      xhr.timeout = 120000;
+      xhr.upload.onprogress = e => onProgress(e.loaded);
+      xhr.onload = () => {
+        let answer = {};
+        try { answer = JSON.parse(xhr.responseText); } catch (e) {}
+        if (xhr.status === 404) reject(Object.assign(new Error(answer.error || 'Загрузка потерялась'), { fatal: true }));
+        else if (xhr.status === 200 && answer.ok) resolve(answer.received);
+        else reject(new Error(answer.error || 'Ошибка ' + xhr.status));
+      };
+      xhr.onerror = xhr.ontimeout = () => reject(new Error('Связь прервалась'));
+      xhr.send(blob);
+    });
+  }
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function uploadVideo(file) {
     if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
       showStatus('Видео больше ' + MAX_VIDEO_MB + ' МБ. Сожмите его или обрежьте и выберите снова.', true);
       return;
@@ -766,52 +800,59 @@
       return;
     }
     saveLocal();
-    const form = new FormData();
-    // Порядок важен: сначала подпись и настройки, потом сам файл
-    form.append('init_data', tg.initData || '');
-    form.append('uid', USER_ID || '');
-    form.append('sig', USER_SIG || '');
-    form.append('settings', JSON.stringify(settings));
-    form.append('video', file, file.name);
-
-    const xhr = new XMLHttpRequest();
     const bar = document.getElementById('progressBar');
     document.getElementById('progress').style.display = 'block';
     bar.style.width = '0';
     uploading = true;
     submitBtn.disabled = saveOnlyBtn.disabled = true;
     if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
-    showStatus('Загружаю видео… Не закрывайте приложение.');
+    showStatus('Готовлю загрузку…');
 
-    function finish() {
+    function setProgress(bytes) {
+      const percent = Math.min(99, Math.floor(bytes / file.size * 100));
+      bar.style.width = percent + '%';
+      showStatus('Загружаю видео… ' + percent + '%. Не закрывайте приложение.');
+    }
+
+    try {
+      const start = await postJson('/upload/start', {
+        init_data: tg.initData || '', uid: USER_ID || '', sig: USER_SIG || '',
+        settings: settings, size: file.size
+      });
+      const uploadId = start.upload_id;
+      // Видео уходит кусками: если связь мигнёт, повторяем только оборвавшийся кусок.
+      // При сбое кусок уменьшается — так проходим и через строгие ограничения сервера.
+      let chunkSize = 4 * 1024 * 1024;
+      let offset = 0;
+      let failures = 0;
+      while (offset < file.size) {
+        const blob = file.slice(offset, offset + chunkSize);
+        try {
+          offset = await sendChunk(uploadId, offset, blob, sent => setProgress(offset + sent));
+          failures = 0;
+          setProgress(offset);
+        } catch (e) {
+          if (e.fatal || ++failures > 6) throw e;
+          chunkSize = Math.max(512 * 1024, Math.floor(chunkSize / 2));
+          showStatus('Связь мигнула, продолжаю загрузку…');
+          await sleep(1500 * failures);
+        }
+      }
+      await postJson('/upload/finish?id=' + encodeURIComponent(uploadId));
+      bar.style.width = '100%';
+      showStatus('✅ Видео загружено! Готовый ролик придёт в чат через пару минут.');
+      if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+      setTimeout(() => tg.close(), 2500);
+    } catch (e) {
+      const text = e.message === 'Связь прервалась' || e.message === 'Failed to fetch'
+        ? 'Связь прервалась. Проверьте интернет и попробуйте ещё раз.'
+        : e.message;
+      showStatus(text, true);
+    } finally {
       uploading = false;
       submitBtn.disabled = saveOnlyBtn.disabled = false;
       if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
     }
-    xhr.upload.onprogress = e => {
-      if (!e.lengthComputable) return;
-      const percent = Math.round(e.loaded / e.total * 100);
-      bar.style.width = percent + '%';
-      showStatus('Загружаю видео… ' + percent + '%. Не закрывайте приложение.');
-    };
-    xhr.onload = () => {
-      finish();
-      let answer = {};
-      try { answer = JSON.parse(xhr.responseText); } catch (e) {}
-      if (xhr.status === 200 && answer.ok) {
-        bar.style.width = '100%';
-        showStatus('✅ Видео загружено! Готовый ролик придёт в чат через пару минут.');
-        setTimeout(() => tg.close(), 2500);
-      } else {
-        showStatus(answer.error || 'Не получилось загрузить видео (ошибка ' + xhr.status + '). Попробуйте ещё раз.', true);
-      }
-    };
-    xhr.onerror = () => {
-      finish();
-      showStatus('Связь прервалась. Проверьте интернет и попробуйте ещё раз.', true);
-    };
-    xhr.open('POST', API_URL.replace(/\/$/, '') + '/upload');
-    xhr.send(form);
   }
 
   if (API_URL) {
