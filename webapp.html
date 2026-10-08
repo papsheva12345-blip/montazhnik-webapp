@@ -106,13 +106,21 @@
     z-index: 10;
     background: var(--bg);
     padding: 8px 0 10px;
-    height: 362px;
+    height: 384px;
     transition: height 0.2s ease;
   }
-  .preview-wrap .preview { transform-origin: top center; transition: transform 0.2s ease; }
-  /* Когда листаешь вниз, пример уменьшается, чтобы не занимать пол-экрана */
+  .preview-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; }
+  .preview-col { display: flex; flex-direction: column; align-items: center; }
+  .format-label { font-size: 11px; color: var(--muted); margin-top: 4px; transition: opacity 0.2s; }
+  /* Горизонтальный пример рисуем в том же масштабе текста (320×180) и уменьшаем вдвое */
+  .land-box { width: 160px; height: 90px; transition: transform 0.2s ease; transform-origin: bottom center; }
+  .preview.land { width: 320px; aspect-ratio: 16 / 9; margin: 0; transform: scale(0.5); transform-origin: top left; }
+  .preview-wrap .preview:not(.land) { transform-origin: top center; transition: transform 0.2s ease; }
+  /* Когда листаешь вниз, примеры уменьшаются, чтобы не занимать пол-экрана */
   .preview-wrap.compact { height: 214px; }
-  .preview-wrap.compact .preview { transform: scale(0.64); }
+  .preview-wrap.compact .preview:not(.land) { transform: scale(0.64); margin-bottom: -115px; }
+  .preview-wrap.compact .land-box { transform: scale(0.64); }
+  .preview-wrap.compact .format-label { opacity: 0; }
   .safe-zone {
     position: absolute;
     inset: 0;
@@ -209,12 +217,29 @@
 
   <!-- Пример субтитров остаётся вверху экрана, пока листаешь настройки -->
   <div class="preview-wrap" id="previewWrap">
+    <div class="preview-row">
+    <div class="preview-col">
     <div class="preview" id="preview">
       <!-- Рамка-подсказка: безопасная зона Reels. В готовом видео её нет -->
       <svg class="safe-zone" viewBox="0 0 1080 1920" preserveAspectRatio="none" aria-hidden="true">
         <path d="M78 185 H1003 V1290 H924 V1578 H78 Z" />
       </svg>
       <div class="preview-text" id="previewText"></div>
+    </div>
+    <div class="format-label">9:16</div>
+    </div>
+    <!-- Тот же пример для горизонтального видео 16:9 -->
+    <div class="preview-col">
+      <div class="land-box">
+        <div class="preview land" id="previewLand">
+          <svg class="safe-zone" viewBox="0 0 1920 1080" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M96 86 H1824 V972 H96 Z" />
+          </svg>
+          <div class="preview-text" id="previewTextLand"></div>
+        </div>
+      </div>
+      <div class="format-label">16:9</div>
+    </div>
     </div>
     <p class="safe-hint">Рамка — зона, где текст не закроют кнопки Reels. В готовом видео её нет.</p>
   </div>
@@ -705,6 +730,28 @@
     replayAnimation(el);
   }
 
+  // Пример 16:9: тот же текст, что и в 9:16, только в горизонтальной рамке
+  function renderLandscape() {
+    const src = document.getElementById('previewText');
+    const el = document.getElementById('previewTextLand');
+    el.className = src.className.replace('anim', '').trim();
+    el.style.cssText = src.style.cssText;
+    el.innerHTML = src.innerHTML;
+    el.style.left = el.style.right = '6.5%';
+    if (src.style.top && !src.style.transform) el.style.top = '9.5%';
+    if (src.style.bottom) el.style.bottom = '11.5%';
+    const inner = el.querySelector('.stretch');
+    if (inner) {
+      // Deco: в широком кадре строки длиннее — заново подгоняем ширину главного слова
+      inner.style.transform = '';
+      const rows = el.querySelectorAll('.pair-lead');
+      const leadWidth = Math.max(...Array.from(rows, measureText));
+      const ratio = Math.max(0.3, Math.min(1.15, Math.min(leadWidth, el.clientWidth) / inner.offsetWidth));
+      inner.style.transform = 'scaleX(' + ratio + ')';
+    }
+    replayAnimation(el);
+  }
+
   function replayAnimation(el) {
     if (settings.animation !== 'dynamic') return;
     void el.offsetWidth;  // перезапуск CSS-анимации при каждом изменении
@@ -735,6 +782,7 @@
       ? 'Парные субтитры: слова сверху, главное слово крупно и цветом.'
       : 'Обычные субтитры: свой шрифт, цвет, обводка и подсветка слова.';
     renderPreview();
+    renderLandscape();
     saveLocal();
   }
   update();
