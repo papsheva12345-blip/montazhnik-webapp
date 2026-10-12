@@ -107,12 +107,12 @@
   }
   .preview-wrap {
     position: sticky;
-    top: 0;
+    top: -190px;  /* при прокрутке пример уезжает вверх и остаётся полоской высотой ~214 px */
     z-index: 10;
     background: var(--bg);
     padding: 8px 0 10px;
     height: 404px;
-    transition: height 0.2s ease;
+    --k: 0;  /* 0 — пример целиком, 1 — уменьшен; меняется плавно вслед за пальцем */
   }
   /* Карусель: каждый пример — отдельный слайд во всю ширину, листается свайпом */
   .preview-row {
@@ -136,14 +136,16 @@
   .dots span { width: 6px; height: 6px; border-radius: 50%; background: #3A4256; cursor: pointer; transition: background 0.2s, width 0.2s; }
   .dots span.active { width: 16px; border-radius: 3px; background: var(--purple-light); }
   /* Горизонтальный пример рисуем в том же масштабе текста (320×180) и уменьшаем вдвое */
-  .preview.land { width: 320px; aspect-ratio: 16 / 9; margin: 0; transition: transform 0.2s ease; transform-origin: top center; }
-  .preview-wrap .preview:not(.land) { transform-origin: top center; transition: transform 0.2s ease; }
-  /* Когда листаешь вниз, примеры уменьшаются, чтобы не занимать пол-экрана */
-  .preview-wrap.compact { height: 214px; }
-  .preview-wrap.compact .preview:not(.land) { transform: scale(0.64); margin-bottom: -115px; }
-  .preview-wrap.compact .preview.land { transform: scale(0.64); margin-bottom: -65px; }
-  .preview-wrap.compact .dots { display: none; }
-  .preview-wrap.compact .format-label { opacity: 0; }
+  .preview.land { width: 320px; aspect-ratio: 16 / 9; margin: 0; }
+  /* Когда листаешь вниз, примеры плавно уменьшаются и опускаются в видимую полоску.
+     Меняется только transform — страница под примером не сдвигается, поэтому ничего не дрожит */
+  .preview-wrap .preview {
+    transform-origin: top center;
+    transform: translateY(calc(var(--k) * 185px)) scale(calc(1 - var(--k) * 0.45));
+  }
+  .preview-wrap .dots, .preview-wrap .format-label, .preview-wrap .safe-hint {
+    opacity: calc(1 - var(--k) * 2);
+  }
   .safe-zone {
     position: absolute;
     inset: 0;
@@ -153,7 +155,6 @@
   }
   .safe-zone path { fill: none; stroke: #F7D3A6; stroke-width: 7; opacity: 0.9; }
   .safe-hint { font-size: 11px; color: var(--muted); text-align: center; margin: 6px 0 0; }
-  .preview-wrap.compact .safe-hint { display: none; }
   .preview-text {
     position: absolute;
     left: 6%;
@@ -1197,12 +1198,16 @@
   (function () {
     const wrap = document.getElementById('previewWrap');
     const start = wrap.offsetTop;
-    // Уменьшаем пример, когда листают вниз, и возвращаем только у самого верха:
-    // разные пороги не дают ему дёргаться туда-сюда на границе
+    // Насколько пример уже уехал вверх (0…1) — от этого плавно зависит его размер
+    let ticking = false;
     window.addEventListener('scroll', () => {
-      const y = window.scrollY;
-      if (!wrap.classList.contains('compact') && y > start + 60) wrap.classList.add('compact');
-      else if (wrap.classList.contains('compact') && y < start + 10) wrap.classList.remove('compact');
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const k = Math.min(1, Math.max(0, (window.scrollY - start) / 190));
+        wrap.style.setProperty('--k', k.toFixed(3));
+        ticking = false;
+      });
     }, { passive: true });
   })();
 </script>
