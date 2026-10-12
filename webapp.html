@@ -55,7 +55,9 @@
     cursor: pointer;
     box-shadow: 0 0 0 4px rgba(139,92,246,0.2);
   }
-  .swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+  .swatches { display: flex; gap: 12px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+  .swatches::-webkit-scrollbar { display: none; }
+  .swatches .swatch { flex: 0 0 auto; }
   .swatch {
     width: 40px;
     height: 40px;
@@ -168,6 +170,7 @@
   /* Горизонтальная лента выбора стиля, как в приложениях монтажа */
   .scroller {
     display: flex;
+    flex-wrap: nowrap;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 4px;
@@ -226,6 +229,50 @@
   .status.error { color: #FCA5A5; }
   button.link { background: none; padding: 10px 0 0; font-weight: 400; color: var(--muted); font-size: 14px; }
   button:disabled { opacity: 0.6; }
+
+  /* Плитки настроек: нажатие меняет значение по кругу, «?» открывает описание */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .tile {
+    position: relative; margin: 0; padding: 14px 14px 12px; min-height: 92px;
+    border-radius: 18px; background: var(--card); border: 1px solid #262D3F;
+    display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;
+    user-select: none; -webkit-tap-highlight-color: transparent; transition: transform 0.1s;
+  }
+  .tile:active { transform: scale(0.97); }
+  .tile .label { margin: 0 26px 0 0; font-size: 14px; line-height: 1.25; }
+  .tile .options, .tile .hint { display: none; }
+  .tile-value { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; color: var(--white); margin-top: 14px; }
+  .tile-value .arrows { color: var(--muted); font-size: 16px; }
+  .tile.on .tile-value span:first-child { color: var(--purple-light); }
+  .tile.off-state .tile-value span:first-child { color: var(--muted); }
+  .help {
+    position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border-radius: 50%;
+    border: 1.5px solid #4B5368; color: var(--muted); font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* Окошко-описание снизу */
+  .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 50; display: none; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 51; background: #1A2133;
+    border-radius: 22px 22px 0 0; padding: 22px 22px 34px; transform: translateY(105%);
+    transition: transform 0.25s ease;
+  }
+  .sheet.open { transform: none; }
+  .sheet h3 { margin: 0 0 10px; font-size: 18px; }
+  .sheet p { margin: 0 0 18px; font-size: 15px; line-height: 1.45; color: #D1D5DB; }
+  .sheet .grab { width: 40px; height: 4px; border-radius: 2px; background: #3A4256; margin: -8px auto 16px; }
+
+  /* Эффект текста: листается стрелками ‹ › */
+  .fx { display: flex; align-items: center; justify-content: space-between; background: var(--card);
+        border-radius: 18px; padding: 6px; }
+  .fx b { font-size: 17px; }
+  .fx .arrow { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center;
+               justify-content: center; font-size: 22px; color: var(--muted); cursor: pointer; }
+  .fx-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+  .fx-dots span { width: 6px; height: 6px; border-radius: 50%; background: #3A4256; transition: width 0.2s; }
+  .fx-dots span.active { width: 16px; border-radius: 3px; background: var(--white); }
+  .preview-text.fx-glass { background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.28);
+        border-radius: 10px; padding: 5px 4px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 </style>
 </head>
 <body>
@@ -291,39 +338,10 @@
     <div class="hint" id="styleHint"></div>
   </div>
 
-  <div class="block" id="pairOnly">
-    <span class="label">Цвет акцента</span>
-    <div class="options scroller" data-group="accent_color">
-      <div class="opt" data-value="#F57C1F"><span class="dot" style="background:#F57C1F"></span>Оранжевый 🔥</div>
-      <div class="opt" data-value="#EFFF00"><span class="dot" style="background:#EFFF00"></span>Лимонный 🔥</div>
-      <div class="opt" data-value="#F7EEA8"><span class="dot" style="background:#F7EEA8"></span>Ванильный 🔥</div>
-      <div class="opt" data-value="#FFB020"><span class="dot" style="background:#FFB020"></span>Янтарь</div>
-      <div class="opt" data-value="#4DA3FF"><span class="dot" style="background:#4DA3FF"></span>Лазурь</div>
-      <div class="opt" data-value="#A3E635"><span class="dot" style="background:#A3E635"></span>Лайм</div>
-      <div class="opt" data-value="#EF4444"><span class="dot" style="background:#EF4444"></span>Багровый</div>
-      <div class="opt" data-value="#C084FC"><span class="dot" style="background:#C084FC"></span>Сирень</div>
-      <div class="opt" data-value="#FFFFFF"><span class="dot" style="background:#FFFFFF"></span>Белый</div>
-    </div>
-    <span class="label" style="margin-top:14px">Обводка букв</span>
-    <div class="options" data-group="pair_outline">
-      <div class="opt" data-value="false">Без обводки</div>
-      <div class="opt" data-value="true">С обводкой</div>
-    </div>
-  </div>
-
-  <div class="block">
-    <span class="label">Оформление</span>
-    <div class="options" data-group="animation">
-      <div class="opt" data-value="dynamic">Динамичное</div>
-      <div class="opt" data-value="static">Статичное</div>
-    </div>
-  </div>
-
-  <div id="plainOnly">
-
+  <div id="plainTop">
   <div class="block">
     <span class="label">Шрифт</span>
-    <div class="options fonts" data-group="font">
+    <div class="options fonts scroller" data-group="font">
       <div class="opt" data-value="arial" style="font-family: Arial, sans-serif">Arial</div>
       <div class="opt" data-value="impact" style="font-family: Impact, 'Arial Black', sans-serif">Impact</div>
       <div class="opt" data-value="verdana" style="font-family: Verdana, sans-serif">Verdana</div>
@@ -344,8 +362,45 @@
       <div class="swatch" style="background:#A16207" data-value="#A16207"></div>
     </div>
   </div>
+  </div>
+
+  <div class="block" id="pairOnly">
+    <span class="label">Цвет акцента</span>
+    <div class="options scroller" data-group="accent_color">
+      <div class="opt" data-value="#F57C1F"><span class="dot" style="background:#F57C1F"></span>Оранжевый 🔥</div>
+      <div class="opt" data-value="#EFFF00"><span class="dot" style="background:#EFFF00"></span>Лимонный 🔥</div>
+      <div class="opt" data-value="#F7EEA8"><span class="dot" style="background:#F7EEA8"></span>Ванильный 🔥</div>
+      <div class="opt" data-value="#FFB020"><span class="dot" style="background:#FFB020"></span>Янтарь</div>
+      <div class="opt" data-value="#4DA3FF"><span class="dot" style="background:#4DA3FF"></span>Лазурь</div>
+      <div class="opt" data-value="#A3E635"><span class="dot" style="background:#A3E635"></span>Лайм</div>
+      <div class="opt" data-value="#EF4444"><span class="dot" style="background:#EF4444"></span>Багровый</div>
+      <div class="opt" data-value="#C084FC"><span class="dot" style="background:#C084FC"></span>Сирень</div>
+      <div class="opt" data-value="#FFFFFF"><span class="dot" style="background:#FFFFFF"></span>Белый</div>
+    </div>
+  </div>
 
   <div class="block">
+    <span class="label">Эффект текста</span>
+    <div class="fx" id="fxPicker">
+      <div class="arrow" id="fxPrev">‹</div>
+      <b id="fxName">Без эффекта</b>
+      <div class="arrow" id="fxNext">›</div>
+    </div>
+    <div class="fx-dots" id="fxDots"></div>
+  </div>
+
+  <div class="block" id="pairOnly2">
+    <span class="label">Обводка букв</span>
+    <div class="options" data-group="pair_outline">
+      <div class="opt" data-value="false">Без обводки</div>
+      <div class="opt" data-value="true">С обводкой</div>
+    </div>
+  </div>
+
+  <div id="plainOnly">
+
+
+  <div class="block tile">
     <span class="label">Обводка</span>
     <div class="options" data-group="outline">
       <div class="opt" data-value="none">Нет</div>
@@ -368,7 +423,7 @@
     </div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Буквы</span>
     <div class="options" data-group="caps">
       <div class="opt" data-value="false">Обычные</div>
@@ -378,7 +433,15 @@
 
   </div>
 
-  <div class="block">
+  <div class="block tile">
+    <span class="label">Оформление</span>
+    <div class="options" data-group="animation">
+      <div class="opt" data-value="dynamic">Динамичное</div>
+      <div class="opt" data-value="static">Статичное</div>
+    </div>
+  </div>
+
+  <div class="block tile">
     <span class="label">Размер текста</span>
     <div class="options" data-group="size">
       <div class="opt" data-value="small">Маленький</div>
@@ -387,7 +450,7 @@
     </div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Позиция субтитров</span>
     <div class="options" data-group="subtitle_position">
       <div class="opt" data-value="auto">Авто</div>
@@ -411,7 +474,7 @@
     <div class="hint">Если ролик получится длиннее, уберу второстепенные фразы, начало и конец сохраню.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Вырезать паузы</span>
     <div class="options" data-group="pauses">
       <div class="opt" data-value="off">Нет</div>
@@ -422,7 +485,7 @@
     <div class="hint" id="pausesHint"></div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Убирать запинки и слова-паразиты</span>
     <div class="options" data-group="remove_fillers">
       <div class="opt" data-value="true">Да</div>
@@ -431,7 +494,7 @@
     <div class="hint">«Э-э», «м-м», «ну», «короче», «как бы», повторы и оборванные слова.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Убирать неудачные дубли</span>
     <div class="options" data-group="remove_retakes">
       <div class="opt" data-value="true">Да</div>
@@ -442,7 +505,7 @@
 
   <h2>Эффекты</h2>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Наезд камеры в начале</span>
     <div class="options" data-group="camera_intro">
       <div class="opt" data-value="true">Да</div>
@@ -451,7 +514,7 @@
     <div class="hint">Первые секунды кадр плавно приближается — взгляд цепляется сразу.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Движение камеры</span>
     <div class="options" data-group="camera_motion">
       <div class="opt" data-value="true">Да</div>
@@ -460,7 +523,7 @@
     <div class="hint">На смене фраз и склейках кадр то приближается, то отдаляется, как в Reels.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Придумать хук к видео</span>
     <div class="options" data-group="hook">
       <div class="opt" data-value="true">Да</div>
@@ -469,7 +532,7 @@
     <div class="hint">ИИ придумает цепляющую фразу по смыслу ролика и крупно покажет её в начале.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Эмодзи в субтитрах</span>
     <div class="options" data-group="emoji">
       <div class="opt" data-value="true">Да</div>
@@ -478,7 +541,7 @@
     <div class="hint">ИИ подберёт эмодзи по смыслу и поставит над субтитрами — не к каждой фразе, а там, где уместно.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Звуковые эффекты</span>
     <div class="options" data-group="sound_effects">
       <div class="opt" data-value="true">Да</div>
@@ -487,7 +550,7 @@
     <div class="hint">Короткий щелчок на смене кадра и когда появляется главное слово.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Медиа-карточки</span>
     <div class="options" data-group="media_cards">
       <div class="opt" data-value="true">Да</div>
@@ -496,7 +559,7 @@
     <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Плашки и карточки</span>
     <div class="options" data-group="plates">
       <div class="opt" data-value="true">Да</div>
@@ -505,7 +568,7 @@
     <div class="hint">ИИ выберет 2–3 главные мысли («3 ошибки новичков», «Главный секрет») и покажет их на яркой плашке цвета акцента.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Фокус-вставки</span>
     <div class="options" data-group="focus">
       <div class="opt" data-value="true">Да</div>
@@ -514,7 +577,7 @@
     <div class="hint">В яркий момент фон затемняется и размывается, а почти на весь экран появляется картинка по смыслу (например, телефон с папкой) или крупные значки ⚠️📈. Субтитры остаются чёткими.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Список ✓ / ✗</span>
     <div class="options" data-group="checklist">
       <div class="opt" data-value="true">Да</div>
@@ -523,7 +586,7 @@
     <div class="hint">Когда вы перечисляете «так — работает, так — нет», появляются стеклянные плашки с ✓ и ✗.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Улучшить качество</span>
     <div class="options" data-group="enhance">
       <div class="opt" data-value="true">Да</div>
@@ -532,7 +595,7 @@
     <div class="hint">Убираю шум из звука и выравниваю громкость голоса, делаю картинку чуть чётче и сочнее.</div>
   </div>
 
-  <div class="block">
+  <div class="block tile">
     <span class="label">Стабилизация</span>
     <div class="options" data-group="stabilize">
       <div class="opt" data-value="true">Да</div>
@@ -549,6 +612,10 @@
     </label>
     <input type="file" id="videoInput" accept="video/*" hidden>
   </div>
+
+  <div class="sheet-bg" id="sheetBg"></div>
+  <div class="sheet" id="sheet"><div class="grab"></div><h3 id="sheetTitle"></h3><p id="sheetText"></p>
+    <button id="sheetOk">Понятно</button></div>
 
   <div class="footer">
     <div class="progress" id="progress"><div id="progressBar"></div></div>
@@ -589,7 +656,8 @@
     focus: true,
     checklist: true,
     enhance: true,
-    stabilize: false
+    stabilize: false,
+    text_effect: 'none'
   };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
@@ -842,12 +910,14 @@
     else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
   }
 
-  function update() {
+  let update = function () {
     trimValue.textContent = 'до ' + formatSeconds(settings.trim_seconds);
     document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
     const isPair = Boolean(PAIR_STYLES[settings.style]);
     document.getElementById('pairOnly').style.display = isPair ? '' : 'none';
+    document.getElementById('pairOnly2').style.display = isPair ? '' : 'none';
     document.getElementById('plainOnly').style.display = isPair ? 'none' : '';
+    document.getElementById('plainTop').style.display = isPair ? 'none' : '';
     document.getElementById('styleHint').textContent = isPair
       ? 'Парные субтитры: слова сверху, главное слово крупно и цветом.'
       : 'Обычные субтитры: свой шрифт, цвет, обводка и подсветка слова.';
@@ -855,6 +925,95 @@
     renderLandscape();
     saveLocal();
   }
+  // --- Эффект текста ---
+  const FX = [
+    { v: 'none', name: 'Без эффекта' },
+    { v: 'glass', name: 'Стекло' },
+    { v: 'glow', name: 'Свечение' },
+    { v: 'shadow', name: 'Тень' }
+  ];
+  const fxDots = document.getElementById('fxDots');
+  FX.forEach(() => fxDots.appendChild(document.createElement('span')));
+  function stepFx(d) {
+    let i = FX.findIndex(f => f.v === settings.text_effect);
+    i = (Math.max(0, i) + d + FX.length) % FX.length;
+    settings.text_effect = FX[i].v;
+    update();
+  }
+  document.getElementById('fxPrev').addEventListener('click', () => stepFx(-1));
+  document.getElementById('fxNext').addEventListener('click', () => stepFx(1));
+
+  function applyFx(el) {
+    el.classList.toggle('fx-glass', settings.text_effect === 'glass');
+    const color = PAIR_STYLES[settings.style] ? settings.accent_color : settings.subtitle_color;
+    const parts = el.querySelectorAll('.pair-accent, .plain-line');
+    parts.forEach(p => {
+      if (settings.text_effect === 'glow') p.style.textShadow = `0 0 6px ${color}, 0 0 14px ${color}`;
+      if (settings.text_effect === 'shadow') p.style.textShadow = '2px 3px 0 rgba(0,0,0,0.85), 3px 5px 8px rgba(0,0,0,0.6)';
+    });
+  }
+
+  // --- Плитки ---
+  const sheet = document.getElementById('sheet'), sheetBg = document.getElementById('sheetBg');
+  function openSheet(title, text) {
+    document.getElementById('sheetTitle').textContent = title;
+    document.getElementById('sheetText').textContent = text;
+    sheetBg.style.display = 'block';
+    requestAnimationFrame(() => sheet.classList.add('open'));
+  }
+  function closeSheet() { sheet.classList.remove('open'); sheetBg.style.display = 'none'; }
+  sheetBg.addEventListener('click', closeSheet);
+  document.getElementById('sheetOk').addEventListener('click', closeSheet);
+
+  // Подряд идущие плитки собираем в сетку по две в ряд
+  document.querySelectorAll('.tile').forEach(tile => {
+    if (tile.previousElementSibling && tile.previousElementSibling.classList.contains('tiles')) {
+      tile.previousElementSibling.appendChild(tile);
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'tiles';
+      tile.before(grid);
+      grid.appendChild(tile);
+    }
+    const group = tile.querySelector('[data-group]');
+    const key = group.dataset.group;
+    const items = Array.from(group.querySelectorAll('[data-value]'));
+    const label = tile.querySelector('.label').textContent;
+    const hintEl = tile.querySelector('.hint');
+    const value = document.createElement('div');
+    value.className = 'tile-value';
+    value.innerHTML = '<span></span><span class="arrows">↔</span>';
+    tile.appendChild(value);
+    const help = document.createElement('div');
+    help.className = 'help';
+    help.textContent = '?';
+    tile.appendChild(help);
+    help.addEventListener('click', e => {
+      e.stopPropagation();
+      const text = hintEl ? hintEl.textContent : '';
+      openSheet(label, text || 'Варианты: ' + items.map(i => i.textContent).join(', ') + '.');
+    });
+    tile.addEventListener('click', () => {
+      const i = items.findIndex(el => el.dataset.value === String(settings[key]));
+      items[(i + 1) % items.length].click();
+    });
+    tile._refresh = () => {
+      const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
+      value.firstChild.textContent = cur.textContent;
+      tile.classList.toggle('on', cur.dataset.value === 'true');
+      tile.classList.toggle('off-state', cur.dataset.value === 'false');
+    };
+  });
+
+  const baseUpdate = update;
+  update = function () {
+    baseUpdate();
+    applyFx(document.getElementById('previewText'));
+    applyFx(document.getElementById('previewTextLand'));
+    document.getElementById('fxName').textContent = (FX.find(f => f.v === settings.text_effect) || FX[0]).name;
+    fxDots.querySelectorAll('span').forEach((d, i) => d.classList.toggle('active', FX[i].v === settings.text_effect));
+    document.querySelectorAll('.tile').forEach(t => t._refresh && t._refresh());
+  };
   update();
 
   // Адрес бота для загрузки видео бот передаёт в ссылке на приложение (?api=...)
