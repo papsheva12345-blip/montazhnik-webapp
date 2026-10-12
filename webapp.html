@@ -994,8 +994,13 @@
       openSheet(label, text || 'Варианты: ' + items.map(i => i.textContent).join(', ') + '.');
     });
     tile.addEventListener('click', () => {
+      // Меняем значение сами: щелчок по скрытой кнопке всплывал обратно в плитку и сбрасывал выбор
       const i = items.findIndex(el => el.dataset.value === String(settings[key]));
-      items[(i + 1) % items.length].click();
+      const next = items[(i + 1) % items.length];
+      items.forEach(el => el.classList.toggle('selected', el === next));
+      const v = next.dataset.value;
+      settings[key] = (v === 'true' || v === 'false') ? v === 'true' : v;
+      update();
     });
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
