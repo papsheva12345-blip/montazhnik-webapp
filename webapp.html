@@ -21,6 +21,7 @@
   }
   * { box-sizing: border-box; }
   body {
+    overflow-anchor: none;  /* браузер не подкручивает прокрутку, когда пример уменьшается */
     margin: 0;
     background: var(--bg);
     color: var(--white);
@@ -1196,8 +1197,12 @@
   (function () {
     const wrap = document.getElementById('previewWrap');
     const start = wrap.offsetTop;
+    // Уменьшаем пример, когда листают вниз, и возвращаем только у самого верха:
+    // разные пороги не дают ему дёргаться туда-сюда на границе
     window.addEventListener('scroll', () => {
-      wrap.classList.toggle('compact', window.scrollY > start + 40);
+      const y = window.scrollY;
+      if (!wrap.classList.contains('compact') && y > start + 60) wrap.classList.add('compact');
+      else if (wrap.classList.contains('compact') && y < start + 10) wrap.classList.remove('compact');
     }, { passive: true });
   })();
 </script>
