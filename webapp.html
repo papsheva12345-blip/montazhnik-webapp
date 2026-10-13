@@ -145,6 +145,26 @@
   .mini.show { opacity: 1; transform: none; }
   .mini .preview { position: absolute; left: 0; top: 0; margin: 0; transform-origin: top left; border-radius: 0; }
   .mini .safe-zone { display: none; }
+  /* Пока видна полоска, содержимое страницы сдвинуто вниз на её высоту — подписи под ней не прячутся */
+  body.mini-on { padding-top: 174px; }
+  @media (min-width: 600px) {
+    .mini { height: 120px; max-width: 640px; margin: 0 auto; }
+    body.mini-on { padding-top: 144px; }
+  }
+
+  /* Компьютер: у лент стилей, шрифтов и цветов появляются стрелки ‹ › — листать мышью */
+  .hscroll { position: relative; }
+  .hs-btn {
+    display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+    width: 34px; height: 34px; border-radius: 50%; border: none; padding: 0;
+    background: rgba(21,27,41,0.92); color: var(--white); font-size: 20px; line-height: 34px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5); cursor: pointer;
+  }
+  .hs-btn.prev { left: -4px; }
+  .hs-btn.next { right: -4px; }
+  @media (hover: hover) and (pointer: fine) {
+    .hscroll .hs-btn.show { display: block; }
+  }
   .safe-zone {
     position: absolute;
     inset: 0;
@@ -1215,13 +1235,18 @@
       bar.appendChild(copy);
     }
     let ticking = false;
+    let threshold = wrap.offsetTop + wrap.offsetHeight - 90;
     function onScroll() {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        const show = wrap.getBoundingClientRect().bottom < 90;
+        // Порог считаем по прокрутке (а не по положению примера): отступ под полоской
+        // сдвигает страницу, и по положению полоска мигала бы туда-сюда
+        if (!bar.classList.contains('show')) threshold = wrap.offsetTop + wrap.offsetHeight - 90;
+        const show = window.scrollY > threshold;
         if (show && !bar.classList.contains('show')) refreshMini();
         bar.classList.toggle('show', show);
+        document.body.classList.toggle('mini-on', show);
         ticking = false;
       });
     }
@@ -1231,6 +1256,35 @@
       if (bar.classList.contains('show')) refreshMini();
     }, 350));
   })();
+  // Стрелки и колёсико мыши для горизонтальных лент (на компьютере)
+  document.querySelectorAll('.scroller, .swatches').forEach(list => {
+    const box = document.createElement('div');
+    box.className = 'hscroll';
+    list.before(box);
+    box.appendChild(list);
+    const prev = document.createElement('button'), next = document.createElement('button');
+    prev.className = 'hs-btn prev'; prev.textContent = '‹'; prev.type = 'button';
+    next.className = 'hs-btn next'; next.textContent = '›'; next.type = 'button';
+    box.append(prev, next);
+    const step = () => Math.max(120, list.clientWidth * 0.7);
+    prev.addEventListener('click', e => { e.stopPropagation(); list.scrollBy({ left: -step(), behavior: 'smooth' }); });
+    next.addEventListener('click', e => { e.stopPropagation(); list.scrollBy({ left: step(), behavior: 'smooth' }); });
+    const refresh = () => {
+      prev.classList.toggle('show', list.scrollLeft > 4);
+      next.classList.toggle('show', list.scrollLeft + list.clientWidth < list.scrollWidth - 4);
+    };
+    list.addEventListener('scroll', refresh, { passive: true });
+    window.addEventListener('resize', refresh);
+    // Колёсико мыши над лентой листает её вбок
+    list.addEventListener('wheel', e => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      const canScroll = list.scrollWidth > list.clientWidth;
+      if (!canScroll) return;
+      e.preventDefault();
+      list.scrollLeft += e.deltaY;
+    }, { passive: false });
+    setTimeout(refresh, 300);
+  });
 </script>
 </body>
 </html>
