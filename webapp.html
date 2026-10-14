@@ -282,7 +282,27 @@
   }
   .sheet.open { transform: none; }
   .sheet h3 { margin: 0 0 10px; font-size: 18px; }
-  .sheet p { margin: 0 0 18px; font-size: 15px; line-height: 1.45; color: #D1D5DB; }
+  .sheet p { margin: 0 0 18px; font-size: 15px; line-height: 1.45; color: #D1D5DB; white-space: pre-line; }
+  .sheet { max-height: 88vh; overflow-y: auto; }
+  .h2-help { display: flex; align-items: center; gap: 10px; }
+  .h2-help .help { position: static; cursor: pointer; }
+  /* Карточка «Какое видео подойдёт» */
+  .req-card { border-radius: 22px; padding: 20px 18px; margin-bottom: 18px;
+    background: radial-gradient(120% 90% at 0% 0%, #4A1D5E 0%, transparent 60%),
+                radial-gradient(90% 80% at 100% 0%, #5A3A12 0%, transparent 60%), #12141C;
+    border: 1px solid #2E2340; }
+  .req-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .req-top b { font-size: 15px; } .req-top span { font-size: 11px; letter-spacing: 3px; color: #9CA3AF; }
+  .req-title { font-size: 28px; font-weight: 800; line-height: 1.05; margin-bottom: 14px; }
+  .req-title i { font-style: normal; background: linear-gradient(90deg, #FFB84D, #FF4FA3, #B44DFF);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .req-row { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-top: 1px solid #2A2F3E; font-size: 15px; font-weight: 600; }
+  .req-row small { color: #9CA3AF; font-family: monospace; font-size: 13px; width: 18px; }
+  .req-no { margin-top: 12px; border: 1px solid #2A2F3E; border-radius: 16px; padding: 12px; }
+  .req-no > span { font-size: 11px; letter-spacing: 3px; color: #9CA3AF; }
+  .req-no div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .req-no em { font-style: normal; text-align: center; font-size: 12px; color: #D1D5DB; padding: 10px 4px;
+    border: 1px solid #2A2F3E; border-radius: 12px; background: #0D0F15; }
   .sheet .grab { width: 40px; height: 4px; border-radius: 2px; background: #3A4256; margin: -8px auto 16px; }
 
   /* Эффект текста: листается стрелками ‹ › */
@@ -301,7 +321,7 @@
 <body>
 
   <h1>Настройки монтажа</h1>
-  <p class="subtext">Обрезка, паузы и стиль субтитров. Настройки запоминаются.</p>
+  <p class="subtext">Нарезка, паузы и стиль субтитров. Настройки запоминаются.</p>
 
   <!-- Пример субтитров остаётся вверху экрана, пока листаешь настройки -->
   <div class="preview-wrap" id="previewWrap">
@@ -489,18 +509,18 @@
 
   <h2>Монтаж</h2>
 
-  <div class="block">
-    <span class="label">Длина ролика</span>
-    <input type="range" id="trimRange" min="5" max="180" step="5" value="60">
-    <div class="row">
-      <span>5 сек</span>
-      <span id="trimValue">до 60 сек</span>
-      <span>3 мин</span>
+  <div class="block tile">
+    <span class="label">Умная нарезка</span>
+    <div class="options" data-group="smart_cut">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
     </div>
-    <div class="hint">Если ролик получится длиннее, уберу второстепенные фразы, начало и конец сохраню.</div>
+    <div class="hint">Включите, чтобы бот вырезал паузы, запинки и неудачные дубли и собрал ролик из лучших фрагментов.
+
+Выключите, если присылаете уже готовый, смонтированный ролик — монтаж и тайминг не тронем, только подчистим «эээ» и слова-паразиты из звука и субтитров.</div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile smart-dep">
     <span class="label">Вырезать паузы</span>
     <div class="options" data-group="pauses">
       <div class="opt" data-value="off">Нет</div>
@@ -511,7 +531,7 @@
     <div class="hint" id="pausesHint"></div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile smart-dep">
     <span class="label">Убирать запинки и слова-паразиты</span>
     <div class="options" data-group="remove_fillers">
       <div class="opt" data-value="true">Да</div>
@@ -520,7 +540,7 @@
     <div class="hint">«Э-э», «м-м», «ну», «короче», «как бы», повторы и оборванные слова.</div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile smart-dep">
     <span class="label">Убирать неудачные дубли</span>
     <div class="options" data-group="remove_retakes">
       <div class="opt" data-value="true">Да</div>
@@ -631,16 +651,16 @@
   </div>
 
   <div id="uploadSection" style="display:none">
-    <h2>Видео</h2>
+    <h2 class="h2-help">Видео <span class="help" id="videoHelp">?</span></h2>
     <label class="file-pick" id="filePick" for="videoInput">
       <b id="fileName">📎 Выбрать видео</b>
-      <span id="fileHint">Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до 500 МБ</span>
+      <span id="fileHint">Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до 100 МБ</span>
     </label>
     <input type="file" id="videoInput" accept="video/*" hidden>
   </div>
 
   <div class="sheet-bg" id="sheetBg"></div>
-  <div class="sheet" id="sheet"><div class="grab"></div><h3 id="sheetTitle"></h3><p id="sheetText"></p>
+  <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetExtra"></div><h3 id="sheetTitle"></h3><p id="sheetText"></p>
     <button id="sheetOk">Понятно</button></div>
 
   <div class="footer">
@@ -657,7 +677,7 @@
 
   const STORAGE_KEY = 'montazhnik_settings';
   const DEFAULTS = {
-    trim_seconds: 60,
+    smart_cut: true,
     pauses: 'normal',
     font: 'arial',
     size: 'medium',
@@ -749,19 +769,6 @@
     });
   });
 
-  const trimRange = document.getElementById('trimRange');
-  const trimValue = document.getElementById('trimValue');
-  trimRange.value = settings.trim_seconds;
-  trimRange.addEventListener('input', () => {
-    settings.trim_seconds = parseInt(trimRange.value, 10);
-    update();
-  });
-
-  function formatSeconds(s) {
-    if (s < 60) return s + ' сек';
-    const m = Math.floor(s / 60), r = s % 60;
-    return m + ' мин' + (r ? ' ' + r + ' сек' : '');
-  }
 
   function outlineShadow(w) {
     return [[-w,-w],[w,-w],[-w,w],[w,w],[0,w],[0,-w],[w,0],[-w,0]]
@@ -937,7 +944,8 @@
   }
 
   let update = function () {
-    trimValue.textContent = 'до ' + formatSeconds(settings.trim_seconds);
+    // Без умной нарезки паузы и дубли не трогаем — эти плитки прячем
+    document.querySelectorAll('.smart-dep').forEach(t => { t.style.display = settings.smart_cut ? '' : 'none'; });
     document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
     const isPair = Boolean(PAIR_STYLES[settings.style]);
     document.getElementById('pairOnly').style.display = isPair ? '' : 'none';
@@ -981,9 +989,10 @@
 
   // --- Плитки ---
   const sheet = document.getElementById('sheet'), sheetBg = document.getElementById('sheetBg');
-  function openSheet(title, text) {
+  function openSheet(title, text, extraHtml) {
     document.getElementById('sheetTitle').textContent = title;
     document.getElementById('sheetText').textContent = text;
+    document.getElementById('sheetExtra').innerHTML = extraHtml || '';
     sheetBg.style.display = 'block';
     requestAnimationFrame(() => sheet.classList.add('open'));
   }
@@ -1054,7 +1063,8 @@
   const USER_ID = PARAMS.get('uid');
   const USER_SIG = PARAMS.get('sig');
   const API_BASE = (API_URL || '').replace(/\/$/, '');
-  const MAX_VIDEO_MB = 500;
+  // Больше 100 МБ сервер пока не тянет: на нашем тарифе не хватает памяти
+  const MAX_VIDEO_MB = 100;
   const submitBtn = document.getElementById('submitBtn');
   const saveOnlyBtn = document.getElementById('saveOnlyBtn');
   const videoInput = document.getElementById('videoInput');
@@ -1152,7 +1162,7 @@
 
   async function uploadVideo(file) {
     if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
-      showStatus('Видео больше ' + MAX_VIDEO_MB + ' МБ. Сожмите его или обрежьте и выберите снова.', true);
+      showStatus('Видео больше ' + MAX_VIDEO_MB + ' МБ. Сожмите его (например, в 1080p) или обрежьте и выберите снова.', true);
       return;
     }
     if (!tg.initData && !USER_SIG) {
@@ -1224,6 +1234,21 @@
       if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
     }
   }
+
+  const VIDEO_CARD = `<div class="req-card">
+    <div class="req-top"><b>Монтажник</b><span>КАКОЕ ВИДЕО</span></div>
+    <div class="req-title">Снимайте<br><i>себя и речь</i></div>
+    <div class="req-row"><small>01</small>🙋 Вы в кадре</div>
+    <div class="req-row"><small>02</small>🎙 Понятная речь в видео</div>
+    <div class="req-row"><small>03</small>⏱ 15 сек — 3 минуты, до ${MAX_VIDEO_MB} МБ</div>
+    <div class="req-no"><span>НЕ ПОДОЙДЁТ</span><div><em>🌿<br>природа</em><em>🎵<br>музыка</em><em>🔇<br>нет речи</em></div></div>
+  </div>`;
+  document.getElementById('videoHelp').addEventListener('click', () => openSheet('Требования к видео',
+    'Отправьте видео от 15 секунд до 3 минут, где вы говорите на камеру: рассказываете о работе, делитесь мыслью, показываете процесс.\n\n'
+    + '📦 Размер — не больше ' + MAX_VIDEO_MB + ' МБ. Если файл больше, снимайте в 1080p вместо 4K или сожмите видео перед загрузкой.\n\n'
+    + '❌ Не подойдёт видео без вашей речи (танцы, тренировки, природа) — монтаж работает именно с разговорной речью.\n\n'
+    + '📱 Готовый ролик всегда вертикальный (9:16) в Full HD — под Reels и Shorts. Горизонтальное видео тоже подойдёт: кадрируем его под вертикаль.',
+    VIDEO_CARD));
 
   if (API_URL) {
     document.getElementById('uploadSection').style.display = '';
