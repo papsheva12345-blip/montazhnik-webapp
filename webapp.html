@@ -26,7 +26,7 @@
     background: var(--bg);
     color: var(--white);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    padding: 24px 20px 350px;
+    padding: 24px 20px 100px;
   }
   h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
   h2 { font-size: 16px; font-weight: 600; margin: 32px 0 16px; color: var(--purple-light); }
@@ -216,13 +216,9 @@
   .anim .pair-lead, .anim .plain-line { animation: fadeIn 0.25s ease-out both; }
   .anim .pair-accent { animation: pop 0.3s 0.08s ease-out both; }
 
+  /* Кнопка загрузки — в самом низу настроек, а не поверх них: так видно, что экран листается */
   .footer {
-    position: fixed;
-    bottom: 64px;
-    left: 0;
-    right: 0;
-    padding: 16px 20px 24px;
-    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    padding: 8px 0 0;
   }
   button {
     width: 100%;
