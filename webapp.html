@@ -1120,6 +1120,36 @@
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+  // Пока идёт загрузка, просим телефон не гасить экран: со спящим экраном загрузка останавливается
+  let wakeLock = null;
+  async function keepScreenOn() {
+    try {
+      if (navigator.wakeLock && !wakeLock && !document.hidden) {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    } catch (e) {}
+  }
+  function letScreenSleep() {
+    try { if (wakeLock) wakeLock.release(); } catch (e) {}
+    wakeLock = null;
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (uploading && !document.hidden) keepScreenOn();
+  });
+  // Если экран всё-таки погас или приложение свернули — ждём, пока его снова откроют
+  function waitVisible() {
+    if (!document.hidden) return Promise.resolve();
+    return new Promise(resolve => {
+      const onShow = () => {
+        if (document.hidden) return;
+        document.removeEventListener('visibilitychange', onShow);
+        resolve();
+      };
+      document.addEventListener('visibilitychange', onShow);
+    });
+  }
+
   async function uploadVideo(file) {
     if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
       showStatus('Видео больше ' + MAX_VIDEO_MB + ' МБ. Сожмите его или обрежьте и выберите снова.', true);
@@ -1136,12 +1166,13 @@
     uploading = true;
     submitBtn.disabled = saveOnlyBtn.disabled = true;
     if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+    keepScreenOn();
     showStatus('Готовлю загрузку…');
 
     function setProgress(bytes) {
       const percent = Math.min(99, Math.floor(bytes / file.size * 100));
       bar.style.width = percent + '%';
-      showStatus('Загружаю видео… ' + percent + '%. Не закрывайте приложение.');
+      showStatus('Загружаю видео… ' + percent + '%. Не закрывайте приложение и не гасите экран.');
     }
 
     try {
@@ -1162,7 +1193,14 @@
           failures = 0;
           setProgress(offset);
         } catch (e) {
-          if (e.fatal || ++failures > 6) throw e;
+          if (e.fatal) throw e;
+          if (document.hidden) {
+            // Экран погас — это не обрыв связи. Продолжим с того же места, когда приложение откроют
+            await waitVisible();
+            showStatus('Продолжаю загрузку…');
+            continue;
+          }
+          if (++failures > 8) throw e;
           chunkSize = Math.max(512 * 1024, Math.floor(chunkSize / 2));
           showStatus('Связь мигнула, продолжаю загрузку…');
           await sleep(1500 * failures);
@@ -1180,6 +1218,7 @@
       showStatus(text, true);
     } finally {
       uploading = false;
+      letScreenSleep();
       submitBtn.disabled = saveOnlyBtn.disabled = false;
       if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
     }
