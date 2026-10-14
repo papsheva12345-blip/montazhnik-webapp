@@ -1200,10 +1200,11 @@
             showStatus('Продолжаю загрузку…');
             continue;
           }
-          if (++failures > 8) throw e;
+          // Повторяем около трёх минут: за это время успевает и мигнуть связь, и перезапуститься сервер
+          if (++failures > 20) throw e;
           chunkSize = Math.max(512 * 1024, Math.floor(chunkSize / 2));
           showStatus('Связь мигнула, продолжаю загрузку…');
-          await sleep(1500 * failures);
+          await sleep(Math.min(1500 * failures, 10000));
         }
       }
       await postJson('/upload/finish?id=' + encodeURIComponent(uploadId));
