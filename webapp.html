@@ -26,7 +26,7 @@
     background: var(--bg);
     color: var(--white);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    padding: 24px 20px 170px;
+    padding: 24px 20px 350px;
   }
   h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
   h2 { font-size: 16px; font-weight: 600; margin: 32px 0 16px; color: var(--purple-light); }
@@ -218,7 +218,7 @@
 
   .footer {
     position: fixed;
-    bottom: 0;
+    bottom: 64px;
     left: 0;
     right: 0;
     padding: 16px 20px 24px;
@@ -284,8 +284,38 @@
   .sheet h3 { margin: 0 0 10px; font-size: 18px; }
   .sheet p { margin: 0 0 18px; font-size: 15px; line-height: 1.45; color: #D1D5DB; white-space: pre-line; }
   .sheet { max-height: 88vh; overflow-y: auto; }
-  .h2-help { display: flex; align-items: center; gap: 10px; }
-  .h2-help .help { position: static; cursor: pointer; }
+  .h2-help { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .req-link { font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer;
+    border-bottom: 1px dashed #4B5368; padding-bottom: 2px; }
+  /* Умная нарезка — строка с переключателем, как у видео */
+  .smart-row { display: flex; align-items: center; gap: 12px; margin: 12px 0 24px; padding: 14px 16px;
+    border-radius: 18px; background: var(--card); border: 1px solid #262D3F; cursor: pointer; }
+  .smart-row b { font-size: 16px; }
+  .smart-row .help { position: static; cursor: pointer; }
+  .smart-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; background: linear-gradient(135deg, #FF4FA3, #FF8A3D); }
+  .switch { margin-left: auto; width: 52px; height: 30px; border-radius: 15px; background: #3A4256; position: relative;
+    transition: background 0.2s; flex-shrink: 0; }
+  .switch span { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--white); transition: transform 0.2s; }
+  .switch.on { background: var(--purple); }
+  .switch.on span { transform: translateX(22px); }
+  .balance-line { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; letter-spacing: 1px; }
+  .balance-line b { color: var(--white); letter-spacing: 0; font-size: 15px; margin-left: 6px; }
+  /* Нижнее меню */
+  .bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; height: 64px; z-index: 40; display: flex;
+    background: #0D1220; border-top: 1px solid #1E2536; padding-bottom: env(safe-area-inset-bottom); }
+  .bottom-nav a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--muted); cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  .bottom-nav i { font-style: normal; font-size: 20px; line-height: 1; margin-bottom: 4px; position: relative; }
+  .bottom-nav a.main { color: var(--white); font-weight: 600; }
+  .bottom-nav a.main i { width: 52px; height: 52px; margin: -26px 0 4px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 24px;
+    background: linear-gradient(135deg, #FF4FA3, #8B5CF6); box-shadow: 0 6px 18px rgba(255,79,163,0.35); }
+  .bottom-nav em { position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: #FF3B6B; color: #fff; font-size: 11px; font-style: normal; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .bottom-nav em[hidden] { display: none; }
   /* Карточка «Какое видео подойдёт» */
   .req-card { border-radius: 22px; padding: 20px 18px; margin-bottom: 18px;
     background: radial-gradient(120% 90% at 0% 0%, #4A1D5E 0%, transparent 60%),
@@ -509,17 +539,6 @@
 
   <h2>Монтаж</h2>
 
-  <div class="block tile">
-    <span class="label">Умная нарезка</span>
-    <div class="options" data-group="smart_cut">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">Включите, чтобы бот вырезал паузы, запинки и неудачные дубли и собрал ролик из лучших фрагментов.
-
-Выключите, если присылаете уже готовый, смонтированный ролик — монтаж и тайминг не тронем, только подчистим «эээ» и слова-паразиты из звука и субтитров.</div>
-  </div>
-
   <div class="block tile smart-dep">
     <span class="label">Вырезать паузы</span>
     <div class="options" data-group="pauses">
@@ -651,13 +670,23 @@
   </div>
 
   <div id="uploadSection" style="display:none">
-    <h2 class="h2-help">Видео <span class="help" id="videoHelp">?</span></h2>
+    <h2 class="h2-help">Видео <span class="req-link" id="videoHelp">ⓘ Требования к видео</span></h2>
     <label class="file-pick" id="filePick" for="videoInput">
       <b id="fileName">📎 Выбрать видео</b>
       <span id="fileHint">Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до 100 МБ</span>
     </label>
     <input type="file" id="videoInput" accept="video/*" hidden>
   </div>
+
+  <div class="smart-row" id="smartRow">
+    <div class="smart-icon">✂️</div>
+    <b>Умная нарезка</b>
+    <span class="help" id="smartHelp">?</span>
+    <div class="switch" id="smartSwitch"><span></span></div>
+  </div>
+  <div class="smart-hint" id="smartHintText" hidden>Включите, чтобы бот вырезал паузы, запинки и неудачные дубли и собрал ролик из лучших фрагментов.
+
+Выключите, если присылаете уже готовый, смонтированный ролик — монтаж и тайминг не тронем, только подчистим «эээ» и слова-паразиты из звука и субтитров.</div>
 
   <div class="sheet-bg" id="sheetBg"></div>
   <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetExtra"></div><h3 id="sheetTitle"></h3><p id="sheetText"></p>
@@ -668,7 +697,15 @@
     <div class="status" id="status"></div>
     <button id="submitBtn">Сохранить и начать монтаж</button>
     <button class="link" id="saveOnlyBtn" style="display:none">Только сохранить настройки</button>
+    <div class="balance-line" id="balanceLine"></div>
   </div>
+
+  <nav class="bottom-nav" id="bottomNav">
+    <a data-action="videos"><i>🎞</i>Ролики</a>
+    <a class="active main"><i>✨</i>Монтаж</a>
+    <a data-action="balance"><i>🪙<em id="navBadge" hidden></em></i>Баланс</a>
+    <a data-action="profile"><i>👤</i>Профиль</a>
+  </nav>
 
 <script>
   const tg = window.Telegram.WebApp;
@@ -945,7 +982,7 @@
 
   let update = function () {
     // Без умной нарезки паузы и дубли не трогаем — эти плитки прячем
-    document.querySelectorAll('.smart-dep').forEach(t => { t.style.display = settings.smart_cut ? '' : 'none'; });
+    document.querySelectorAll('.smart-dep').forEach(t => { t.style.display = settings.smart_cut !== false ? '' : 'none'; });
     document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
     const isPair = Boolean(PAIR_STYLES[settings.style]);
     document.getElementById('pairOnly').style.display = isPair ? '' : 'none';
@@ -1249,6 +1286,51 @@
     + '❌ Не подойдёт видео без вашей речи (танцы, тренировки, природа) — монтаж работает именно с разговорной речью.\n\n'
     + '📱 Готовый ролик всегда вертикальный (9:16) в Full HD — под Reels и Shorts. Горизонтальное видео тоже подойдёт: кадрируем его под вертикаль.',
     VIDEO_CARD));
+
+  // Умная нарезка: переключатель в строке, «?» — описание
+  const smartSwitch = document.getElementById('smartSwitch');
+  const refreshSmart = () => smartSwitch.classList.toggle('on', settings.smart_cut !== false);
+  document.getElementById('smartRow').addEventListener('click', () => {
+    settings.smart_cut = settings.smart_cut === false;
+    refreshSmart();
+    update();
+  });
+  document.getElementById('smartHelp').addEventListener('click', e => {
+    e.stopPropagation();
+    openSheet('Умная нарезка', document.getElementById('smartHintText').textContent.trim());
+  });
+  refreshSmart();
+
+  function authBody(extra) {
+    return Object.assign({ init_data: tg.initData || '', uid: USER_ID || '', sig: USER_SIG || '' }, extra || {});
+  }
+  function tokensWord(n) {
+    const m10 = n % 10, m100 = n % 100;
+    const w = m10 === 1 && m100 !== 11 ? 'токен' : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? 'токена' : 'токенов');
+    return n + ' ' + w;
+  }
+  // Баланс под кнопкой и на значке в меню
+  if (API_URL) {
+    postJson('/upload/me', authBody()).then(me => {
+      const line = document.getElementById('balanceLine');
+      const badge = document.getElementById('navBadge');
+      if (me.admin) { line.innerHTML = 'БАЛАНС <b>без ограничений</b>'; return; }
+      line.innerHTML = 'БАЛАНС <b>' + tokensWord(me.balance) + '</b>';
+      badge.textContent = me.balance;
+      badge.hidden = false;
+    }).catch(() => {});
+  }
+  // Нижнее меню: бот присылает в чат ролики, баланс или профиль, приложение закрывается
+  document.querySelectorAll('#bottomNav a[data-action]').forEach(a => a.addEventListener('click', () => {
+    if (uploading) return;
+    if (!API_URL) { showStatus('Откройте приложение кнопкой «Приложение ✨» в боте.', true); return; }
+    saveLocal();
+    showStatus('Открываю…');
+    postJson('/upload/action', authBody({ action: a.dataset.action, settings: settings }))
+      .then(() => tg.close())
+      .catch(e => showStatus(e.message || 'Не получилось. Попробуйте ещё раз.', true));
+  }));
+  document.querySelector('#bottomNav a.main').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
   if (API_URL) {
     document.getElementById('uploadSection').style.display = '';
