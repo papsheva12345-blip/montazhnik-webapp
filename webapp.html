@@ -545,7 +545,7 @@
     </div>
   </div>
 
-  <div class="block tile not-kinetic">
+  <div class="block tile">
     <span class="label">Позиция субтитров</span>
     <div class="options" data-group="subtitle_position">
       <div class="opt" data-value="auto">Авто</div>
@@ -643,7 +643,7 @@
     <div class="hint">Короткий щелчок на смене кадра и когда появляется главное слово.</div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile not-kinetic">
     <span class="label">Медиа-карточки</span>
     <div class="options" data-group="media_cards">
       <div class="opt" data-value="true">Да</div>
@@ -652,7 +652,7 @@
     <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile not-kinetic">
     <span class="label">Плашки и карточки</span>
     <div class="options" data-group="plates">
       <div class="opt" data-value="true">Да</div>
@@ -670,7 +670,7 @@
     <div class="hint">В яркий момент фон затемняется и размывается, а почти на весь экран появляется картинка по смыслу (например, телефон с папкой) или крупные значки ⚠️📈. Субтитры остаются чёткими.</div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile not-kinetic">
     <span class="label">Список ✓ / ✗</span>
     <div class="options" data-group="checklist">
       <div class="opt" data-value="true">Да</div>
@@ -1024,7 +1024,7 @@
     el.style.right = '8.6%';
     // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
     const top = settings.subtitle_position === 'top'
-      || (settings.subtitle_position === 'auto' && PAIR_STYLES[settings.style]) || settings.style === 'kinetic';
+      || (settings.subtitle_position === 'auto' && (PAIR_STYLES[settings.style] || settings.style === 'kinetic'));
     if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
     else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
