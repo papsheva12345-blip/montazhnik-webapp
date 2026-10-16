@@ -215,6 +215,16 @@
   @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .anim .pair-lead, .anim .plain-line { animation: fadeIn 0.25s ease-out both; }
   .anim .pair-accent { animation: pop 0.3s 0.08s ease-out both; }
+  .kin-lead { display: block; font-family: 'Montserrat', sans-serif; font-weight: 500; font-style: italic; font-size: 9px;
+    color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.55); line-height: 1.1; white-space: nowrap; }
+  .kin-big { display: inline-block; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 30px; color: #fff;
+    line-height: 1; white-space: nowrap; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+  .kin-pill { display: table; margin: 3px auto 0; background: #fff; border-radius: 99px; padding: 2px 10px 3px;
+    font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 13px; box-shadow: 0 2px 6px rgba(0,30,80,0.35); }
+  .anim .kin-lead { animation: blurIn 0.35s ease-out both; }
+  .anim .kin-big { animation: blurIn 0.35s 0.25s ease-out both; }
+  .anim .kin-pill { animation: pop 0.3s 0.6s ease-out both; }
+  @keyframes blurIn { from { opacity: 0; filter: blur(5px); transform: translateY(5px); } to { opacity: 1; filter: none; transform: none; } }
 
   /* Кнопка загрузки — в самом низу настроек, а не поверх них: так видно, что экран листается */
   .footer {
@@ -389,6 +399,7 @@
     <span class="label">Стиль</span>
     <div class="options scroller" data-group="style">
       <div class="opt" data-value="plain">Обычные</div>
+      <div class="opt" data-value="kinetic" style="font-family: 'Oswald', sans-serif; font-weight: 700">Кинетика 🔥</div>
       <div class="opt" data-value="deco" style="font-family: 'Poiret One', sans-serif; font-weight: 700">Deco 🔥</div>
       <div class="opt" data-value="nouveau" style="font-family: 'Poiret One', sans-serif">Nouveau</div>
       <div class="opt" data-value="billboard" style="font-family: 'Russo One', sans-serif">Billboard</div>
@@ -451,7 +462,19 @@
     </div>
   </div>
 
-  <div class="block">
+  <div class="block" id="kineticOnly">
+    <span class="label">Цвет «Кинетики» — таблетки, слова и фон карточек</span>
+    <div class="options scroller" data-group="kinetic_color">
+      <div class="opt" data-value="blue"><span class="dot" style="background:#1684FF"></span>Синий</div>
+      <div class="opt" data-value="pink"><span class="dot" style="background:#FF388C"></span>Розовый</div>
+      <div class="opt" data-value="purple"><span class="dot" style="background:#8448FF"></span>Фиолетовый</div>
+      <div class="opt" data-value="orange"><span class="dot" style="background:#FF7A14"></span>Оранжевый</div>
+      <div class="opt" data-value="green"><span class="dot" style="background:#14B45F"></span>Зелёный</div>
+      <div class="opt" data-value="black"><span class="dot" style="background:#18181C;border:1px solid #555"></span>Чёрный</div>
+    </div>
+  </div>
+
+  <div class="block" id="fxBlock">
     <span class="label">Эффект текста</span>
     <div class="fx" id="fxPicker">
       <div class="arrow" id="fxPrev">‹</div>
@@ -505,7 +528,7 @@
 
   </div>
 
-  <div class="block tile">
+  <div class="block tile not-kinetic">
     <span class="label">Оформление</span>
     <div class="options" data-group="animation">
       <div class="opt" data-value="dynamic">Динамичное</div>
@@ -513,7 +536,7 @@
     </div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile not-kinetic">
     <span class="label">Размер текста</span>
     <div class="options" data-group="size">
       <div class="opt" data-value="small">Маленький</div>
@@ -522,7 +545,7 @@
     </div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile not-kinetic">
     <span class="label">Позиция субтитров</span>
     <div class="options" data-group="subtitle_position">
       <div class="opt" data-value="auto">Авто</div>
@@ -600,6 +623,15 @@
       <div class="opt" data-value="false">Нет</div>
     </div>
     <div class="hint">ИИ подберёт эмодзи по смыслу и поставит над субтитрами — не к каждой фразе, а там, где уместно.</div>
+  </div>
+
+  <div class="block tile" id="textCardsTile">
+    <span class="label">Текстовые карточки</span>
+    <div class="options" data-group="text_cards">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Только для стиля «Кинетика». В главных местах ролика видео на 2–4 секунды сменяется цветным фоном: мелкая подпись, крупные слова и таблетки появляются под ваш голос. Переход — увеличение с размытием и звук «вжух». Карточек 1–4, по длине ролика.</div>
   </div>
 
   <div class="block tile">
@@ -736,8 +768,13 @@
     checklist: true,
     enhance: true,
     stabilize: false,
-    text_effect: 'none'
+    text_effect: 'none',
+    kinetic_color: 'blue',
+    text_cards: true
   };
+  // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
+  const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
+                           green: '#14B45F', black: '#18181C' };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
     nouveau: { font: "'Poiret One', sans-serif", caps: true, scale: 1.2 },
@@ -898,9 +935,26 @@
     return w;
   }
 
+  // «Кинетика»: мелкая подпись курсивом, крупные слова и главное слово в таблетке
+  function renderKineticPreview(el) {
+    const color = KINETIC_COLORS[settings.kinetic_color] || KINETIC_COLORS.blue;
+    el.style.fontFamily = el.style.fontSize = el.style.color = el.style.textTransform = el.style.textShadow = '';
+    el.innerHTML = '<span class="kin-lead">смотрите,</span><span class="kin-big">ЧТО МОЖЕТ</span>'
+      + '<span class="kin-pill" style="color:' + color + '">бот</span>';
+    const big = el.querySelector('.kin-big');
+    const avail = el.clientWidth * 0.94;
+    if (big.offsetWidth > avail) big.style.fontSize = (parseFloat(getComputedStyle(big).fontSize) * avail / big.offsetWidth) + 'px';
+  }
+
   function renderPreview() {
     const el = document.getElementById('previewText');
     el.classList.remove('anim');
+    if (settings.style === 'kinetic') {
+      placePreview(el);
+      renderKineticPreview(el);
+      replayAnimation(el);
+      return;
+    }
     if (PAIR_STYLES[settings.style]) {
       placePreview(el);  // сначала место в рамке: от его ширины зависит размер главного слова
       renderPairPreview(el);
@@ -970,7 +1024,7 @@
     el.style.right = '8.6%';
     // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
     const top = settings.subtitle_position === 'top'
-      || (settings.subtitle_position === 'auto' && PAIR_STYLES[settings.style]);
+      || (settings.subtitle_position === 'auto' && PAIR_STYLES[settings.style]) || settings.style === 'kinetic';
     if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
     else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
@@ -981,11 +1035,19 @@
     document.querySelectorAll('.smart-dep').forEach(t => { t.style.display = settings.smart_cut !== false ? '' : 'none'; });
     document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
     const isPair = Boolean(PAIR_STYLES[settings.style]);
-    document.getElementById('pairOnly').style.display = isPair ? '' : 'none';
-    document.getElementById('pairOnly2').style.display = isPair ? '' : 'none';
-    document.getElementById('plainOnly').style.display = isPair ? 'none' : '';
-    document.getElementById('plainTop').style.display = isPair ? 'none' : '';
-    document.getElementById('styleHint').textContent = isPair
+    const isKinetic = settings.style === 'kinetic';
+    const show = (id, on) => { document.getElementById(id).style.display = on ? '' : 'none'; };
+    show('pairOnly', isPair);
+    show('pairOnly2', isPair);
+    show('plainOnly', !isPair && !isKinetic);
+    show('plainTop', !isPair && !isKinetic);
+    show('kineticOnly', isKinetic);
+    show('fxBlock', !isKinetic);
+    show('textCardsTile', isKinetic);
+    document.querySelectorAll('.not-kinetic').forEach(t => { t.style.display = isKinetic ? 'none' : ''; });
+    document.getElementById('styleHint').textContent = isKinetic
+      ? 'Кинетика: слова проявляются из размытия, мелкая подпись + крупное слово, главное — в таблетке. Как в моушн-роликах.'
+      : isPair
       ? 'Парные субтитры: слова сверху, главное слово крупно и цветом.'
       : 'Обычные субтитры: свой шрифт, цвет, обводка и подсветка слова.';
     renderPreview();
