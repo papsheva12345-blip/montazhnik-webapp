@@ -701,7 +701,7 @@
     <h2 class="h2-help">Видео <span class="req-link" id="videoHelp">ⓘ Требования к видео</span></h2>
     <label class="file-pick" id="filePick" for="videoInput">
       <b id="fileName">📎 Выбрать видео</b>
-      <span id="fileHint">Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до 300 МБ</span>
+      <span id="fileHint">Вертикальное 9:16 или горизонтальное 16:9, MP4 или MOV, до 500 МБ</span>
     </label>
     <input type="file" id="videoInput" accept="video/*" hidden>
   </div>
@@ -1158,8 +1158,8 @@
   const USER_ID = PARAMS.get('uid');
   const USER_SIG = PARAMS.get('sig');
   const API_BASE = (API_URL || '').replace(/\/$/, '');
-  // Больше 300 МБ не принимаем: долго грузится и тяжело для сервера
-  const MAX_VIDEO_MB = 300;
+  // Больше 500 МБ не принимаем: долго грузится и тяжело для сервера
+  const MAX_VIDEO_MB = 500;
   const submitBtn = document.getElementById('submitBtn');
   const saveOnlyBtn = document.getElementById('saveOnlyBtn');
   const videoInput = document.getElementById('videoInput');
