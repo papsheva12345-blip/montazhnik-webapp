@@ -1257,8 +1257,12 @@
     let failures = 0;     // обрывы подряд
     const report = () => setProgress(done + Object.values(inFlight).reduce((a, b) => a + b, 0));
     let fatal = null;
-    async function worker() {
+    // Сколько кусков можно слать одновременно. Если сервер или сеть не пускают несколько сразу
+    // (защита от атак, VPN), при обрывах уменьшаем до одного — тогда грузится как раньше, по очереди
+    let allowed = Math.min(PARALLEL, total);
+    async function worker(id) {
       while (queue.length && !fatal) {
+        if (id >= allowed) return;
         const index = queue.shift();
         const blob = file.slice(index * partSize, Math.min(file.size, (index + 1) * partSize));
         try {
@@ -1274,12 +1278,13 @@
           if (document.hidden) { await waitVisible(); showStatus('Продолжаю загрузку…'); continue; }
           // Около трёх минут обрывов подряд — сдаёмся (за это время успевает перезапуститься и сервер)
           if (++failures > 40) { fatal = e; return; }
+          if (allowed > 1) allowed--;
           showStatus('Связь мигнула, продолжаю загрузку…');
           await sleep(Math.min(1000 * failures, 8000));
         }
       }
     }
-    await Promise.all(Array.from({ length: Math.min(PARALLEL, total) }, worker));
+    await Promise.all(Array.from({ length: Math.min(PARALLEL, total) }, (_, id) => worker(id)));
     if (fatal) throw fatal;
   }
 
