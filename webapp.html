@@ -1225,6 +1225,64 @@
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+  // Кусок по номеру (параллельная загрузка): несколько кусков летят одновременно
+  function sendPart(uploadId, index, blob, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', API_BASE + '/upload/part?id=' + encodeURIComponent(uploadId) + '&index=' + index);
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      xhr.timeout = 90000;
+      xhr.upload.onprogress = e => onProgress(e.loaded);
+      xhr.onload = () => {
+        let answer = {};
+        try { answer = JSON.parse(xhr.responseText); } catch (e) {}
+        if (xhr.status === 404) reject(Object.assign(new Error(answer.error || 'Загрузка потерялась'), { fatal: true }));
+        else if (xhr.status === 200 && answer.ok) resolve();
+        else reject(new Error(answer.error || 'Ошибка ' + xhr.status));
+      };
+      xhr.onerror = xhr.ontimeout = () => reject(new Error('Связь прервалась'));
+      xhr.send(blob);
+    });
+  }
+
+  // Параллельная загрузка: PARALLEL кусков одновременно. Оборвавшийся кусок отправляется заново,
+  // остальные продолжают лететь — при дальней или плохой связи так в 2–3 раза быстрее
+  const PARALLEL = 4;
+  async function uploadParts(uploadId, file, partSize, setProgress) {
+    const total = Math.ceil(file.size / partSize);
+    const queue = [];
+    for (let i = 0; i < total; i++) queue.push(i);
+    const inFlight = {};  // сколько байт уже ушло у кусков, которые сейчас летят
+    let done = 0;         // байт в полностью отправленных кусках
+    let failures = 0;     // обрывы подряд
+    const report = () => setProgress(done + Object.values(inFlight).reduce((a, b) => a + b, 0));
+    let fatal = null;
+    async function worker() {
+      while (queue.length && !fatal) {
+        const index = queue.shift();
+        const blob = file.slice(index * partSize, Math.min(file.size, (index + 1) * partSize));
+        try {
+          await sendPart(uploadId, index, blob, sent => { inFlight[index] = sent; report(); });
+          delete inFlight[index];
+          done += blob.size;
+          failures = 0;
+          report();
+        } catch (e) {
+          delete inFlight[index];
+          queue.unshift(index);  // этот кусок — первым в очередь
+          if (e.fatal) { fatal = e; return; }
+          if (document.hidden) { await waitVisible(); showStatus('Продолжаю загрузку…'); continue; }
+          // Около трёх минут обрывов подряд — сдаёмся (за это время успевает перезапуститься и сервер)
+          if (++failures > 40) { fatal = e; return; }
+          showStatus('Связь мигнула, продолжаю загрузку…');
+          await sleep(Math.min(1000 * failures, 8000));
+        }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(PARALLEL, total) }, worker));
+    if (fatal) throw fatal;
+  }
+
   // Пока идёт загрузка, просим телефон не гасить экран: со спящим экраном загрузка останавливается
   let wakeLock = null;
   async function keepScreenOn() {
@@ -1283,9 +1341,12 @@
     try {
       const start = await postJson('/upload/start', {
         init_data: tg.initData || '', uid: USER_ID || '', sig: USER_SIG || '',
-        settings: settings, size: file.size
+        settings: settings, size: file.size, parallel: true
       });
       const uploadId = start.upload_id;
+      if (start.part_size) {
+        await uploadParts(uploadId, file, start.part_size, setProgress);
+      } else {
       // Видео уходит кусками: если связь мигнёт, повторяем только оборвавшийся кусок.
       // При сбое кусок уменьшается — так проходим и через строгие ограничения сервера.
       let chunkSize = 4 * 1024 * 1024;
@@ -1311,6 +1372,7 @@
           showStatus('Связь мигнула, продолжаю загрузку…');
           await sleep(Math.min(1500 * failures, 10000));
         }
+      }
       }
       await postJson('/upload/finish?id=' + encodeURIComponent(uploadId));
       bar.style.width = '100%';
