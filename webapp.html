@@ -536,7 +536,7 @@
     </div>
   </div>
 
-  <div class="block tile not-kinetic">
+  <div class="block tile">
     <span class="label">Размер текста</span>
     <div class="options" data-group="size">
       <div class="opt" data-value="small">Маленький</div>
@@ -941,7 +941,12 @@
     el.style.fontFamily = el.style.fontSize = el.style.color = el.style.textTransform = el.style.textShadow = '';
     el.innerHTML = '<span class="kin-lead">смотрите,</span><span class="kin-big">ЧТО МОЖЕТ</span>'
       + '<span class="kin-pill" style="color:' + color + '">бот</span>';
+    // «Размер текста» работает и для «Кинетики» — как в боте: мельче 0.8, крупнее 1.15
+    const k = { small: 0.8, medium: 1, large: 1.15 }[settings.size] || 1;
+    el.querySelector('.kin-lead').style.fontSize = (9 * k) + 'px';
+    el.querySelector('.kin-pill').style.fontSize = (13 * k) + 'px';
     const big = el.querySelector('.kin-big');
+    big.style.fontSize = (30 * k) + 'px';
     const avail = el.clientWidth * 0.94;
     if (big.offsetWidth > avail) big.style.fontSize = (parseFloat(getComputedStyle(big).fontSize) * avail / big.offsetWidth) + 'px';
   }
