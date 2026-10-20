@@ -625,6 +625,16 @@
     <div class="hint">ИИ подберёт эмодзи по смыслу и поставит над субтитрами — не к каждой фразе, а там, где уместно.</div>
   </div>
 
+  <div class="block tile">
+    <span class="label">Обложка для Reels</span>
+    <div class="options" data-group="cover">
+      <div class="opt" data-value="poster">Постер</div>
+      <div class="opt" data-value="kinetic">Кинетика</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">После монтажа бот пришлёт картинку-обложку: лучший кадр с вашим лицом и крупный заголовок, который ИИ придумает по смыслу ролика. «Постер» — тонкая строка и крупные оранжевые слова; «Кинетика» — главные слова на белой таблетке цветом «Кинетики». Заголовок виден и в сетке профиля. Бесплатно.</div>
+  </div>
+
   <div class="block tile" id="textCardsTile">
     <span class="label">Текстовые карточки</span>
     <div class="options" data-group="text_cards">
@@ -770,7 +780,8 @@
     stabilize: false,
     text_effect: 'none',
     kinetic_color: 'blue',
-    text_cards: true
+    text_cards: true,
+    cover: 'poster'
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -1140,7 +1151,7 @@
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
       value.firstChild.textContent = cur.textContent;
-      tile.classList.toggle('on', cur.dataset.value === 'true');
+      tile.classList.toggle('on', cur.dataset.value === 'true' || (key === 'cover' && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
   });
