@@ -471,6 +471,9 @@
       <div class="opt" data-value="orange"><span class="dot" style="background:#FF7A14"></span>Оранжевый</div>
       <div class="opt" data-value="green"><span class="dot" style="background:#14B45F"></span>Зелёный</div>
       <div class="opt" data-value="black"><span class="dot" style="background:#18181C;border:1px solid #555"></span>Чёрный</div>
+      <div class="opt" data-value="vanilla"><span class="dot" style="background:#F7E8B0"></span>Ванильный</div>
+      <div class="opt" data-value="mint"><span class="dot" style="background:#B2F0D4"></span>Мятный</div>
+      <div class="opt" data-value="powder"><span class="dot" style="background:#FFC6D6"></span>Нежно-розовый</div>
     </div>
   </div>
 
@@ -785,7 +788,10 @@
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
-                           green: '#14B45F', black: '#18181C' };
+                           green: '#14B45F', black: '#18181C',
+                           vanilla: '#9C6C1C', mint: '#128466', powder: '#CE4076' };
+  // Пастельные: таблетка пастельная, слово на ней — насыщенным тоном (как в боте)
+  const KINETIC_PASTEL = { vanilla: '#F7E8B0', mint: '#B2F0D4', powder: '#FFC6D6' };
   // Парные стили: шрифт главного слова и заглавные ли буквы
   const PAIR_STYLES = {
     nouveau: { font: "'Poiret One', sans-serif", caps: true, scale: 1.2 },
@@ -951,14 +957,16 @@
     const color = KINETIC_COLORS[settings.kinetic_color] || KINETIC_COLORS.blue;
     el.style.fontFamily = el.style.fontSize = el.style.color = el.style.textTransform = el.style.textShadow = '';
     el.innerHTML = '<span class="kin-lead">смотрите,</span><span class="kin-big">ЧТО МОЖЕТ</span>'
-      + '<span class="kin-pill" style="color:' + color + '">бот</span>';
+      + '<span class="kin-pill" style="color:' + color + ';background:'
+      + (KINETIC_PASTEL[settings.kinetic_color] || '#fff') + '">бот</span>';
     // «Размер текста» работает и для «Кинетики» — как в боте: мельче 0.8, крупнее 1.15
     const k = { small: 0.8, medium: 1, large: 1.15 }[settings.size] || 1;
     el.querySelector('.kin-lead').style.fontSize = (9 * k) + 'px';
     el.querySelector('.kin-pill').style.fontSize = (13 * k) + 'px';
     const big = el.querySelector('.kin-big');
     big.style.fontSize = (30 * k) + 'px';
-    const avail = el.clientWidth * 0.94;
+    // Крупные слова не шире своей доли кадра — иначе «Средний» и «Крупный» одинаковые
+    const avail = el.clientWidth * 0.94 * ({ small: 0.72, medium: 0.86, large: 1 }[settings.size] || 0.86);
     if (big.offsetWidth > avail) big.style.fontSize = (parseFloat(getComputedStyle(big).fontSize) * avail / big.offsetWidth) + 'px';
   }
 
