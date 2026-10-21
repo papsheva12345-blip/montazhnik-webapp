@@ -9,7 +9,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=Montserrat:wght@500;900&family=Unbounded:wght@800&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@1,700&family=Oswald:wght@700&family=PT+Sans&family=PT+Serif:ital@1&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Marck+Script&family=Montserrat:wght@500;900&family=Unbounded:wght@800&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Great+Vibes&family=Pacifico&family=Playfair+Display:ital,wght@1,700&family=Oswald:wght@700&family=PT+Sans&family=PT+Serif:ital,wght@0,700;1,400&family=Poiret+One&family=Rubik+Mono+One&family=Russo+One&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
   :root {
     --bg: #0A0F1A;
@@ -221,9 +221,9 @@
     line-height: 1; white-space: nowrap; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
   .kin-pill { display: table; margin: 3px auto 0; background: #fff; border-radius: 99px; padding: 2px 10px 3px;
     font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 13px; box-shadow: 0 2px 6px rgba(0,30,80,0.35); }
-  .pst-thin { display: block; font-family: 'Poiret One', sans-serif; color: #fff; line-height: 1.05;
+  .pst-thin { display: block; font-family: 'PT Serif', serif; font-weight: 700; color: #fff; line-height: 1.05;
     text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
-  .pst-big { display: block; font-family: 'Oswald', sans-serif; font-weight: 700; line-height: 1.1;
+  .pst-big { display: block; font-family: 'Great Vibes', cursive; line-height: 0.95; margin-top: -2px;
     text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
   .anim .pst-thin { animation: pop 0.3s ease-out both; }
   .anim .pst-thin + .pst-thin { animation-delay: 0.25s; }
@@ -478,6 +478,7 @@
       <div class="opt" data-value="purple"><span class="dot" style="background:#8448FF"></span>Фиолетовый</div>
       <div class="opt" data-value="orange"><span class="dot" style="background:#FF7A14"></span>Оранжевый</div>
       <div class="opt" data-value="green"><span class="dot" style="background:#14B45F"></span>Зелёный</div>
+      <div class="opt" data-value="red"><span class="dot" style="background:#E42028"></span>Красный</div>
       <div class="opt" data-value="black"><span class="dot" style="background:#18181C;border:1px solid #555"></span>Чёрный</div>
       <div class="opt" data-value="vanilla"><span class="dot" style="background:#F7E8B0"></span>Ванильный</div>
       <div class="opt" data-value="mint"><span class="dot" style="background:#B2F0D4"></span>Мятный</div>
@@ -796,7 +797,7 @@
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
-                           green: '#14B45F', black: '#18181C',
+                           green: '#14B45F', red: '#E42028', black: '#18181C',
                            vanilla: '#9C6C1C', mint: '#128466', powder: '#CE4076' };
   // Пастельные: таблетка пастельная, слово на ней — насыщенным тоном (как в боте)
   const KINETIC_PASTEL = { vanilla: '#F7E8B0', mint: '#B2F0D4', powder: '#FFC6D6' };
@@ -984,10 +985,10 @@
     const color = key === 'black' ? '#FFFFFF' : (KINETIC_PASTEL[key] || KINETIC_COLORS[key] || KINETIC_COLORS.blue);
     el.style.fontFamily = el.style.fontSize = el.style.color = el.style.textTransform = el.style.textShadow = '';
     el.innerHTML = '<span class="pst-thin">СМОТРИТЕ, ЧТО</span><span class="pst-thin">МОЖЕТ</span>'
-      + '<span class="pst-big" style="color:' + color + '">БОТ</span>';
+      + '<span class="pst-big" style="color:' + color + '">бот</span>';
     const k = { small: 0.8, medium: 1, large: 1.15 }[settings.size] || 1;
-    el.querySelectorAll('.pst-thin').forEach(t => { t.style.fontSize = (17 * k) + 'px'; });
-    el.querySelector('.pst-big').style.fontSize = (30 * k) + 'px';
+    el.querySelectorAll('.pst-thin').forEach(t => { t.style.fontSize = (14 * k) + 'px'; });
+    el.querySelector('.pst-big').style.fontSize = (44 * k) + 'px';
   }
 
   function renderPreview() {
@@ -1103,7 +1104,7 @@
     document.getElementById('styleHint').textContent = isKinetic
       ? 'Кинетика: слова проявляются из размытия, мелкая подпись + крупное слово, главное — в таблетке. Как в моушн-роликах.'
       : isPoster
-      ? 'Постер: фраза собирается по словам, как афиша. Главное слово печатается белым под звук клавиатуры и окрашивается в выбранный цвет.'
+      ? 'Постер: фраза собирается по словам, как афиша. Главное слово — прописью: печатается белым под звук клавиатуры и окрашивается в выбранный цвет.'
       : isPair
       ? 'Парные субтитры: слова сверху, главное слово крупно и цветом.'
       : 'Обычные субтитры: свой шрифт, цвет, обводка и подсветка слова.';
