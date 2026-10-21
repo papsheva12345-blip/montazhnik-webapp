@@ -221,6 +221,13 @@
     line-height: 1; white-space: nowrap; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
   .kin-pill { display: table; margin: 3px auto 0; background: #fff; border-radius: 99px; padding: 2px 10px 3px;
     font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 13px; box-shadow: 0 2px 6px rgba(0,30,80,0.35); }
+  .pst-thin { display: block; font-family: 'Poiret One', sans-serif; color: #fff; line-height: 1.05;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .pst-big { display: block; font-family: 'Oswald', sans-serif; font-weight: 700; line-height: 1.1;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .anim .pst-thin { animation: pop 0.3s ease-out both; }
+  .anim .pst-thin + .pst-thin { animation-delay: 0.25s; }
+  .anim .pst-big { animation: pop 0.3s 0.55s ease-out both; }
   .anim .kin-lead { animation: blurIn 0.35s ease-out both; }
   .anim .kin-big { animation: blurIn 0.35s 0.25s ease-out both; }
   .anim .kin-pill { animation: pop 0.3s 0.6s ease-out both; }
@@ -400,6 +407,7 @@
     <div class="options scroller" data-group="style">
       <div class="opt" data-value="plain">Обычные</div>
       <div class="opt" data-value="kinetic" style="font-family: 'Oswald', sans-serif; font-weight: 700">Кинетика 🔥</div>
+      <div class="opt" data-value="poster" style="font-family: 'Poiret One', sans-serif; font-weight: 700">Постер ✨</div>
       <div class="opt" data-value="deco" style="font-family: 'Poiret One', sans-serif; font-weight: 700">Deco 🔥</div>
       <div class="opt" data-value="nouveau" style="font-family: 'Poiret One', sans-serif">Nouveau</div>
       <div class="opt" data-value="billboard" style="font-family: 'Russo One', sans-serif">Billboard</div>
@@ -463,7 +471,7 @@
   </div>
 
   <div class="block" id="kineticOnly">
-    <span class="label">Цвет «Кинетики» — таблетки, слова и фон карточек</span>
+    <span class="label" id="kineticColorLabel">Цвет «Кинетики» — таблетки, слова и фон карточек</span>
     <div class="options scroller" data-group="kinetic_color">
       <div class="opt" data-value="blue"><span class="dot" style="background:#1684FF"></span>Синий</div>
       <div class="opt" data-value="pink"><span class="dot" style="background:#FF388C"></span>Розовый</div>
@@ -970,9 +978,27 @@
     if (big.offsetWidth > avail) big.style.fontSize = (parseFloat(getComputedStyle(big).fontSize) * avail / big.offsetWidth) + 'px';
   }
 
+  // «Постер»: тонкие слова заглавными + главное слово жирно цветом (пастель — светлым тоном, чёрный — белым)
+  function renderPosterPreview(el) {
+    const key = settings.kinetic_color;
+    const color = key === 'black' ? '#FFFFFF' : (KINETIC_PASTEL[key] || KINETIC_COLORS[key] || KINETIC_COLORS.blue);
+    el.style.fontFamily = el.style.fontSize = el.style.color = el.style.textTransform = el.style.textShadow = '';
+    el.innerHTML = '<span class="pst-thin">СМОТРИТЕ, ЧТО</span><span class="pst-thin">МОЖЕТ</span>'
+      + '<span class="pst-big" style="color:' + color + '">БОТ</span>';
+    const k = { small: 0.8, medium: 1, large: 1.15 }[settings.size] || 1;
+    el.querySelectorAll('.pst-thin').forEach(t => { t.style.fontSize = (17 * k) + 'px'; });
+    el.querySelector('.pst-big').style.fontSize = (30 * k) + 'px';
+  }
+
   function renderPreview() {
     const el = document.getElementById('previewText');
     el.classList.remove('anim');
+    if (settings.style === 'poster') {
+      placePreview(el);
+      renderPosterPreview(el);
+      replayAnimation(el);
+      return;
+    }
     if (settings.style === 'kinetic') {
       placePreview(el);
       renderKineticPreview(el);
@@ -1048,7 +1074,8 @@
     el.style.right = '8.6%';
     // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
     const top = settings.subtitle_position === 'top'
-      || (settings.subtitle_position === 'auto' && (PAIR_STYLES[settings.style] || settings.style === 'kinetic'));
+      || (settings.subtitle_position === 'auto'
+          && (PAIR_STYLES[settings.style] || settings.style === 'kinetic' || settings.style === 'poster'));
     if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
     else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
@@ -1060,17 +1087,23 @@
     document.getElementById('pausesHint').textContent = PAUSE_HINTS[settings.pauses];
     const isPair = Boolean(PAIR_STYLES[settings.style]);
     const isKinetic = settings.style === 'kinetic';
+    const isPoster = settings.style === 'poster';
+    const own = isKinetic || isPoster;  // свои стили: цвет «Кинетики», без плашек, хука и списка
     const show = (id, on) => { document.getElementById(id).style.display = on ? '' : 'none'; };
     show('pairOnly', isPair);
     show('pairOnly2', isPair);
-    show('plainOnly', !isPair && !isKinetic);
-    show('plainTop', !isPair && !isKinetic);
-    show('kineticOnly', isKinetic);
-    show('fxBlock', !isKinetic);
+    show('plainOnly', !isPair && !own);
+    show('plainTop', !isPair && !own);
+    show('kineticOnly', own);
+    document.getElementById('kineticColorLabel').textContent = isPoster
+      ? 'Цвет главного слова «Постера»' : 'Цвет «Кинетики» — таблетки, слова и фон карточек';
+    show('fxBlock', !own);
     show('textCardsTile', isKinetic);
-    document.querySelectorAll('.not-kinetic').forEach(t => { t.style.display = isKinetic ? 'none' : ''; });
+    document.querySelectorAll('.not-kinetic').forEach(t => { t.style.display = own ? 'none' : ''; });
     document.getElementById('styleHint').textContent = isKinetic
       ? 'Кинетика: слова проявляются из размытия, мелкая подпись + крупное слово, главное — в таблетке. Как в моушн-роликах.'
+      : isPoster
+      ? 'Постер: фраза собирается по словам, как афиша. Главное слово печатается белым под звук клавиатуры и окрашивается в выбранный цвет.'
       : isPair
       ? 'Парные субтитры: слова сверху, главное слово крупно и цветом.'
       : 'Обычные субтитры: свой шрифт, цвет, обводка и подсветка слова.';
