@@ -648,6 +648,17 @@
     <div class="hint">После монтажа бот пришлёт картинку-обложку: лучший кадр с вашим лицом и крупный заголовок, который ИИ придумает по смыслу ролика. «Постер» — тонкая строка и крупные слова; «Кинетика» — главные слова на белой таблетке. Цвет — как у ваших субтитров (для «Кинетики» — её цвет). Заголовок виден и в сетке профиля. Бесплатно.</div>
   </div>
 
+  <div class="block tile">
+    <span class="label">Видеокарточки</span>
+    <div class="options" data-group="video_cards">
+      <div class="opt" data-value="many">Много</div>
+      <div class="opt" data-value="medium">Средне</div>
+      <div class="opt" data-value="few">Мало</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">На 3–4 секунды фон затемняется в цвет «Кинетики» или «Постера», в центре «пружинкой» появляется наклонённая карточка с коротким видео по смыслу (если видео не нашлось — с подвижной 3D-картинкой), сбоку — подпись. Звук «вжух», на деньгах — касса, на подарках — перезвон. «Много» — 3–4 карточки на 30 секунд ролика, «Средне» — 2–3, «Мало» — 1–2. Вместе с видеокарточками картинки-карточки не ставятся.</div>
+  </div>
+
   <div class="block tile" id="textCardsTile">
     <span class="label">Текстовые карточки</span>
     <div class="options" data-group="text_cards">
@@ -672,7 +683,7 @@
       <div class="opt" data-value="true">Да</div>
       <div class="opt" data-value="false">Нет</div>
     </div>
-    <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами.</div>
+    <div class="hint">ИИ найдёт 2–3 картинки по теме разговора и покажет их на пару секунд над субтитрами. Если включены видеокарточки, картинки не ставятся — их место занимают видео.</div>
   </div>
 
   <div class="block tile not-kinetic">
@@ -794,7 +805,8 @@
     text_effect: 'none',
     kinetic_color: 'blue',
     text_cards: true,
-    cover: 'poster'
+    cover: 'poster',
+    video_cards: false
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -1195,7 +1207,7 @@
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
       value.firstChild.textContent = cur.textContent;
-      tile.classList.toggle('on', cur.dataset.value === 'true' || (key === 'cover' && cur.dataset.value !== 'false'));
+      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards') && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
   });
