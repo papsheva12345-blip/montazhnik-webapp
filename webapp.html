@@ -672,6 +672,26 @@
     <div class="hint">На 3–4 секунды фон затемняется в цвет акцента субтитров, в центре «пружинкой» появляется наклонённая карточка с коротким видео по смыслу (если видео не нашлось — с подвижной 3D-картинкой), сбоку — подпись. Звук «вжух», на деньгах — касса, на подарках — перезвон. «Много» — 3–4 карточки на 30 секунд ролика, «Средне» — 2–3, «Мало» — 1–2. Вместе с видеокарточками картинки-карточки и фокус не ставятся. Для парных и обычных субтитров; у «Кинетики» и «Постера» свои вставки.</div>
   </div>
 
+  <div class="block tile">
+    <span class="label">Фоновая музыка</span>
+    <div class="options" data-group="music">
+      <div class="opt" data-value="false">Нет</div>
+      <div class="opt" data-value="calm">Спокойная</div>
+      <div class="opt" data-value="energetic">Бодрая</div>
+      <div class="opt" data-value="any">Любая</div>
+    </div>
+    <div class="hint">Тихая музыка под голос: плавно начинается и затухает в конце, а когда вы говорите — сама приглушается, чтобы не мешать словам. Треки — из библиотеки «Монтажника», их можно использовать в Reels.</div>
+  </div>
+
+  <div class="block tile">
+    <span class="label">Ритм</span>
+    <div class="options" data-group="rhythm">
+      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="false">Нет</div>
+    </div>
+    <div class="hint">Резкие короткие приближения кадра на главных словах — примерно раз в 2–3 секунды. Ролик выглядит динамичнее, глаз не устаёт.</div>
+  </div>
+
   <div class="block tile" id="textCardsTile">
     <span class="label">Текстовые карточки</span>
     <div class="options" data-group="text_cards">
@@ -819,7 +839,9 @@
     kinetic_color: 'blue',
     text_cards: true,
     cover: 'poster',
-    video_cards: false
+    video_cards: false,
+    music: false,
+    rhythm: true
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -1221,7 +1243,7 @@
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
       value.firstChild.textContent = cur.textContent;
-      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards') && cur.dataset.value !== 'false'));
+      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music') && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
   });
