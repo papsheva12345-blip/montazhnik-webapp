@@ -359,6 +359,19 @@
   .fx-dots span.active { width: 16px; border-radius: 3px; background: var(--white); }
   .preview-text.fx-glass { background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.28);
         border-radius: 10px; padding: 5px 4px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .sub-gate { position: fixed; inset: 0; z-index: 1000; background: rgba(5,8,15,0.92); display: none;
+    align-items: center; justify-content: center; padding: 16px; }
+  .sub-gate.show { display: flex; }
+  .sub-box { width: 100%; max-width: 380px; background: var(--card); border: 1px solid #262D3F; border-radius: 22px;
+    padding: 26px 20px; text-align: center; }
+  .sub-box .gift { font-size: 46px; }
+  .sub-box h3 { margin: 10px 0 8px; font-size: 21px; color: var(--white); }
+  .sub-box p { margin: 0 0 18px; color: var(--muted); font-size: 15px; line-height: 1.45; }
+  .sub-box button { display: block; width: 100%; padding: 15px; border: 0; border-radius: 14px; font-size: 16px;
+    font-weight: 700; margin-top: 10px; cursor: pointer; }
+  .sub-box .go { background: var(--purple); color: #fff; }
+  .sub-box .done { background: transparent; color: var(--purple-light); border: 1px solid var(--purple); }
+  .sub-box .note { min-height: 20px; margin-top: 12px; font-size: 14px; color: #FCA5A5; }
 </style>
 </head>
 <body>
@@ -1568,11 +1581,28 @@
     postJson('/upload/me', authBody()).then(me => {
       const line = document.getElementById('balanceLine');
       const badge = document.getElementById('navBadge');
+      if (me.subscribe) showSubGate(me.subscribe);
       if (me.admin) { line.innerHTML = 'БАЛАНС <b>без ограничений</b>'; return; }
       line.innerHTML = 'БАЛАНС <b>' + tokensWord(me.balance) + '</b>';
       badge.textContent = me.balance;
       badge.hidden = false;
     }).catch(() => {});
+  }
+  // Новичку перед бесплатным роликом — подписка на канал (проверяет бот)
+  function showSubGate(link) {
+    const gate = document.getElementById('subGate');
+    const note = document.getElementById('subNote');
+    gate.classList.add('show');
+    document.getElementById('subGo').onclick = () => {
+      if (tg.openTelegramLink) tg.openTelegramLink(link); else window.open(link, '_blank');
+    };
+    document.getElementById('subDone').onclick = () => {
+      note.textContent = 'Проверяю…';
+      postJson('/upload/subscribed', authBody()).then(r => {
+        if (r.subscribed) { gate.classList.remove('show'); note.textContent = ''; }
+        else note.textContent = 'Подписка пока не видна. Подпишитесь на канал и нажмите ещё раз.';
+      }).catch(() => { note.textContent = 'Не получилось проверить. Попробуйте ещё раз.'; });
+    };
   }
   // Нижнее меню: бот присылает в чат ролики, баланс или профиль, приложение закрывается
   document.querySelectorAll('#bottomNav a[data-action]').forEach(a => a.addEventListener('click', () => {
@@ -1687,5 +1717,15 @@
     setTimeout(refresh, 300);
   });
 </script>
+<div class="sub-gate" id="subGate">
+  <div class="sub-box">
+    <div class="gift">🎁</div>
+    <h3>Первый ролик — в подарок!</h3>
+    <p>Чтобы его получить, подпишитесь на наш канал: там примеры, новости и советы по Reels. Потом нажмите «Я подписан».</p>
+    <button class="go" id="subGo">📣 Подписаться</button>
+    <button class="done" id="subDone">✅ Я подписан</button>
+    <div class="note" id="subNote"></div>
+  </div>
+</div>
 </body>
 </html>
