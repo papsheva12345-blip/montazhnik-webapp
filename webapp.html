@@ -841,7 +841,7 @@
     cover: 'poster',
     video_cards: false,
     music: false,
-    rhythm: true
+    rhythm: false
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -890,6 +890,8 @@
   let settings = { ...DEFAULTS };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    // «Ритм» с 30.10 выключен по умолчанию: у тех, кто его не трогал, сбрасываем один раз
+    if (!saved.rhythm_v2) { saved.rhythm = false; saved.rhythm_v2 = true; }
     settings = { ...DEFAULTS, ...saved };
   } catch (e) {}
 
