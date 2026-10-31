@@ -579,7 +579,7 @@
       <div class="opt" data-value="center">По центру</div>
       <div class="opt" data-value="bottom">Внизу</div>
     </div>
-    <div class="hint">Субтитры никогда не закрывают лицо: бот находит его в кадре и ставит текст под подбородок или над головой. «Авто» — то сверху, то снизу.</div>
+    <div class="hint">Субтитры никогда не закрывают лицо: бот находит его в кадре и ставит текст под подбородок или над головой. «Авто» — над головой, если там есть место, иначе под подбородком.</div>
   </div>
 
   <h2>Монтаж</h2>
@@ -670,6 +670,29 @@
       <div class="opt" data-value="false">Нет</div>
     </div>
     <div class="hint">На 3–4 секунды фон затемняется в цвет акцента субтитров, в центре «пружинкой» появляется наклонённая карточка с коротким видео по смыслу (если видео не нашлось — с подвижной 3D-картинкой), сбоку — подпись. Звук «вжух», на деньгах — касса, на подарках — перезвон. «Много» — 3–4 карточки на 30 секунд ролика, «Средне» — 2–3, «Мало» — 1–2. Вместе с видеокарточками картинки-карточки и фокус не ставятся. Для парных и обычных субтитров; у «Кинетики» и «Постера» свои вставки.</div>
+  </div>
+
+  <div class="block tile" id="vcardStyleTile">
+    <span class="label">Вид видеокарточек</span>
+    <div class="options" data-group="vcard_style">
+      <div class="opt" data-value="tint">Затемнение</div>
+      <div class="opt" data-value="shift">Сдвиг</div>
+    </div>
+    <div class="hint">«Затемнение» — фон темнеет в выбранный цвет, в центре карточка с видео. «Сдвиг» — вы уезжаете в рамку внизу, сверху въезжает рамка с видео по смыслу и заголовок, фон — выбранного цвета.</div>
+  </div>
+
+  <div class="block tile" id="tintColorTile">
+    <span class="label">Цвет видеокарточек</span>
+    <div class="options" data-group="tint_color">
+      <div class="opt" data-value="auto">Как субтитры</div>
+      <div class="opt" data-value="navy">Синий</div>
+      <div class="opt" data-value="black">Чёрный</div>
+      <div class="opt" data-value="burgundy">Бордовый</div>
+      <div class="opt" data-value="emerald">Изумрудный</div>
+      <div class="opt" data-value="purple">Фиолетовый</div>
+      <div class="opt" data-value="gold">Золотой</div>
+    </div>
+    <div class="hint">В какой цвет темнеет фон при «Затемнении» и какого цвета фон при «Сдвиге».</div>
   </div>
 
   <div class="block tile">
@@ -832,7 +855,9 @@
     text_cards: true,
     cover: 'poster',
     video_cards: false,
-    music: false
+    music: false,
+    vcard_style: 'tint',
+    tint_color: 'auto'
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -1117,10 +1142,8 @@
     // внизу справа — ступенька под кнопки Reels, поэтому там текст сдвигаем левее
     el.style.left = '8.7%';
     el.style.right = '8.6%';
-    // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
-    const top = settings.subtitle_position === 'top'
-      || (settings.subtitle_position === 'auto'
-          && (PAIR_STYLES[settings.style] || settings.style === 'kinetic' || settings.style === 'poster'));
+    // «Авто»: над головой, если там есть место (бот проверяет по лицу), иначе внизу
+    const top = settings.subtitle_position === 'top' || settings.subtitle_position === 'auto';
     if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
     else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
@@ -1145,6 +1168,8 @@
     show('fxBlock', !own);
     show('textCardsTile', isKinetic);
     show('videoCardsTile', !own);
+    show('vcardStyleTile', !own && settings.video_cards !== false);
+    show('tintColorTile', !own && settings.video_cards !== false);
     document.querySelectorAll('.not-kinetic').forEach(t => { t.style.display = own ? 'none' : ''; });
     document.getElementById('styleHint').textContent = isKinetic
       ? 'Кинетика: слова проявляются из размытия, мелкая подпись + крупное слово, главное — в таблетке. Как в моушн-роликах.'
@@ -1238,7 +1263,7 @@
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
       value.firstChild.textContent = cur.textContent;
-      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music' || key === 'checklist') && cur.dataset.value !== 'false'));
+      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music' || key === 'checklist' || key === 'vcard_style' || key === 'tint_color') && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
   });
