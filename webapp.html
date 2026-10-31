@@ -579,7 +579,7 @@
       <div class="opt" data-value="center">По центру</div>
       <div class="opt" data-value="bottom">Внизу</div>
     </div>
-    <div class="hint">Субтитры никогда не закрывают лицо: бот находит его в кадре и ставит текст под подбородок или над головой. «Авто» — то сверху, то снизу.</div>
+    <div class="hint">Субтитры никогда не закрывают лицо: бот находит его в кадре и ставит текст под подбородок или над головой. «Авто» — над головой, если там есть место, иначе под подбородком.</div>
   </div>
 
   <h2>Монтаж</h2>
@@ -672,6 +672,29 @@
     <div class="hint">На 3–4 секунды фон затемняется в цвет акцента субтитров, в центре «пружинкой» появляется наклонённая карточка с коротким видео по смыслу (если видео не нашлось — с подвижной 3D-картинкой), сбоку — подпись. Звук «вжух», на деньгах — касса, на подарках — перезвон. «Много» — 3–4 карточки на 30 секунд ролика, «Средне» — 2–3, «Мало» — 1–2. Вместе с видеокарточками картинки-карточки и фокус не ставятся. Для парных и обычных субтитров; у «Кинетики» и «Постера» свои вставки.</div>
   </div>
 
+  <div class="block tile" id="vcardStyleTile">
+    <span class="label">Вид видеокарточек</span>
+    <div class="options" data-group="vcard_style">
+      <div class="opt" data-value="tint">Затемнение</div>
+      <div class="opt" data-value="shift">Сдвиг</div>
+    </div>
+    <div class="hint">«Затемнение» — фон темнеет в выбранный цвет, в центре карточка с видео. «Сдвиг» — въезжает экран выбранного цвета с двумя рамками: вы и видео по смыслу с заголовком. Раскладка меняется по смыслу: видео сверху, видео снизу или видео крупно, а вы — окошком в углу.</div>
+  </div>
+
+  <div class="block tile" id="tintColorTile">
+    <span class="label">Цвет видеокарточек</span>
+    <div class="options" data-group="tint_color">
+      <div class="opt" data-value="auto">Как субтитры</div>
+      <div class="opt" data-value="navy">Синий</div>
+      <div class="opt" data-value="black">Чёрный</div>
+      <div class="opt" data-value="burgundy">Бордовый</div>
+      <div class="opt" data-value="emerald">Изумрудный</div>
+      <div class="opt" data-value="purple">Фиолетовый</div>
+      <div class="opt" data-value="gold">Золотой</div>
+    </div>
+    <div class="hint">В какой цвет темнеет фон при «Затемнении» и какого цвета фон при «Сдвиге».</div>
+  </div>
+
   <div class="block tile">
     <span class="label">Фоновая музыка</span>
     <div class="options" data-group="music">
@@ -681,15 +704,6 @@
       <div class="opt" data-value="any">Любая</div>
     </div>
     <div class="hint">Тихая музыка под голос: плавно начинается и затухает в конце, а когда вы говорите — сама приглушается, чтобы не мешать словам. Треки — из библиотеки «Монтажника», их можно использовать в Reels.</div>
-  </div>
-
-  <div class="block tile">
-    <span class="label">Ритм</span>
-    <div class="options" data-group="rhythm">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">Резкие короткие толчки кадра на главных словах. Когда вы что-то перечисляете, выскакивают таблетки «× ПАУЗА», и на каждой кадр толкается. Без «Ритма» перечисление — карточкой как в iPhone.</div>
   </div>
 
   <div class="block tile" id="textCardsTile">
@@ -740,10 +754,11 @@
   <div class="block tile not-kinetic">
     <span class="label">Плашка-список</span>
     <div class="options" data-group="checklist">
-      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="pills">Таблетки</div>
+      <div class="opt" data-value="iphone">Айфон</div>
       <div class="opt" data-value="false">Нет</div>
     </div>
-    <div class="hint">Когда вы что-то перечисляете (что входит в курс, шаги, правила): с «Ритмом» — выскакивают таблетки по одной на каждом слове; без «Ритма» — кадр съезжает вниз, а сверху карточка как настройки iPhone, переключатель каждого пункта щёлкает на вашем слове. Если сравниваете «так — работает, так — нет» — стеклянные плашки с ✓ и ✗. Нет перечислений — ничего не появляется.</div>
+    <div class="hint">Когда вы что-то перечисляете (паузы, запинки, паразиты; что входит в курс; шаги). «Таблетки» — пункты выскакивают по одному на ваших словах, и кадр на каждом резко прыгает вперёд и назад. «Айфон» — кадр съезжает вниз, сверху карточка как настройки iPhone, переключатели щёлкают на словах. Сравниваете «так — работает, так — нет» — стеклянные плашки ✓ и ✗. Нет перечислений — ничего не появляется.</div>
   </div>
 
   <div class="block tile">
@@ -832,7 +847,7 @@
     media_cards: false,
     plates: false,
     focus: true,
-    checklist: true,
+    checklist: 'pills',
     enhance: true,
     stabilize: false,
     text_effect: 'none',
@@ -841,7 +856,8 @@
     cover: 'poster',
     video_cards: false,
     music: false,
-    rhythm: false
+    vcard_style: 'tint',
+    tint_color: 'auto'
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -891,7 +907,9 @@
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     // «Ритм» с 30.10 выключен по умолчанию: у тех, кто его не трогал, сбрасываем один раз
-    if (!saved.rhythm_v2) { saved.rhythm = false; saved.rhythm_v2 = true; }
+    // Плашка-список: раньше было «Да» — теперь это «Таблетки»
+    if (saved.checklist === true) saved.checklist = 'pills';
+    delete saved.rhythm;
     settings = { ...DEFAULTS, ...saved };
   } catch (e) {}
 
@@ -1124,10 +1142,8 @@
     // внизу справа — ступенька под кнопки Reels, поэтому там текст сдвигаем левее
     el.style.left = '8.7%';
     el.style.right = '8.6%';
-    // «Авто»: парные субтитры — вверху, как в Reels; обычные — внизу
-    const top = settings.subtitle_position === 'top'
-      || (settings.subtitle_position === 'auto'
-          && (PAIR_STYLES[settings.style] || settings.style === 'kinetic' || settings.style === 'poster'));
+    // «Авто»: над головой, если там есть место (бот проверяет по лицу), иначе внизу
+    const top = settings.subtitle_position === 'top' || settings.subtitle_position === 'auto';
     if (top) el.style.top = '12%';
     else if (settings.subtitle_position === 'center') { el.style.top = '50%'; el.style.transform = 'translateY(-50%)'; }
     else { el.style.bottom = '19.3%'; el.style.right = '15.9%'; }
@@ -1152,6 +1168,8 @@
     show('fxBlock', !own);
     show('textCardsTile', isKinetic);
     show('videoCardsTile', !own);
+    show('vcardStyleTile', !own && settings.video_cards !== false);
+    show('tintColorTile', !own && settings.video_cards !== false);
     document.querySelectorAll('.not-kinetic').forEach(t => { t.style.display = own ? 'none' : ''; });
     document.getElementById('styleHint').textContent = isKinetic
       ? 'Кинетика: слова проявляются из размытия, мелкая подпись + крупное слово, главное — в таблетке. Как в моушн-роликах.'
@@ -1245,7 +1263,7 @@
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
       value.firstChild.textContent = cur.textContent;
-      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music') && cur.dataset.value !== 'false'));
+      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music' || key === 'checklist' || key === 'vcard_style' || key === 'tint_color') && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
   });
