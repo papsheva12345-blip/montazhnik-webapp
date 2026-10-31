@@ -683,15 +683,6 @@
     <div class="hint">Тихая музыка под голос: плавно начинается и затухает в конце, а когда вы говорите — сама приглушается, чтобы не мешать словам. Треки — из библиотеки «Монтажника», их можно использовать в Reels.</div>
   </div>
 
-  <div class="block tile">
-    <span class="label">Ритм</span>
-    <div class="options" data-group="rhythm">
-      <div class="opt" data-value="true">Да</div>
-      <div class="opt" data-value="false">Нет</div>
-    </div>
-    <div class="hint">Резкие короткие толчки кадра на главных словах. Когда вы что-то перечисляете, выскакивают таблетки «× ПАУЗА», и на каждой кадр толкается. Без «Ритма» перечисление — карточкой как в iPhone.</div>
-  </div>
-
   <div class="block tile" id="textCardsTile">
     <span class="label">Текстовые карточки</span>
     <div class="options" data-group="text_cards">
@@ -740,10 +731,11 @@
   <div class="block tile not-kinetic">
     <span class="label">Плашка-список</span>
     <div class="options" data-group="checklist">
-      <div class="opt" data-value="true">Да</div>
+      <div class="opt" data-value="pills">Таблетки</div>
+      <div class="opt" data-value="iphone">Айфон</div>
       <div class="opt" data-value="false">Нет</div>
     </div>
-    <div class="hint">Когда вы что-то перечисляете (что входит в курс, шаги, правила): с «Ритмом» — выскакивают таблетки по одной на каждом слове; без «Ритма» — кадр съезжает вниз, а сверху карточка как настройки iPhone, переключатель каждого пункта щёлкает на вашем слове. Если сравниваете «так — работает, так — нет» — стеклянные плашки с ✓ и ✗. Нет перечислений — ничего не появляется.</div>
+    <div class="hint">Когда вы что-то перечисляете (паузы, запинки, паразиты; что входит в курс; шаги). «Таблетки» — пункты выскакивают по одному на ваших словах, и кадр на каждом резко прыгает вперёд и назад. «Айфон» — кадр съезжает вниз, сверху карточка как настройки iPhone, переключатели щёлкают на словах. Сравниваете «так — работает, так — нет» — стеклянные плашки ✓ и ✗. Нет перечислений — ничего не появляется.</div>
   </div>
 
   <div class="block tile">
@@ -832,7 +824,7 @@
     media_cards: false,
     plates: false,
     focus: true,
-    checklist: true,
+    checklist: 'pills',
     enhance: true,
     stabilize: false,
     text_effect: 'none',
@@ -840,8 +832,7 @@
     text_cards: true,
     cover: 'poster',
     video_cards: false,
-    music: false,
-    rhythm: false
+    music: false
   };
   // Цвета «Кинетики»: таблетки, крупные слова и фон карточек
   const KINETIC_COLORS = { blue: '#1684FF', pink: '#FF388C', purple: '#8448FF', orange: '#FF7A14',
@@ -891,7 +882,9 @@
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     // «Ритм» с 30.10 выключен по умолчанию: у тех, кто его не трогал, сбрасываем один раз
-    if (!saved.rhythm_v2) { saved.rhythm = false; saved.rhythm_v2 = true; }
+    // Плашка-список: раньше было «Да» — теперь это «Таблетки»
+    if (saved.checklist === true) saved.checklist = 'pills';
+    delete saved.rhythm;
     settings = { ...DEFAULTS, ...saved };
   } catch (e) {}
 
@@ -1245,7 +1238,7 @@
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
       value.firstChild.textContent = cur.textContent;
-      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music') && cur.dataset.value !== 'false'));
+      tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music' || key === 'checklist') && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
   });
