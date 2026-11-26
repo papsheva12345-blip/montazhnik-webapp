@@ -770,7 +770,7 @@
     <div class="hint">Убираю шум из звука и выравниваю громкость голоса, делаю картинку чуть чётче и сочнее.</div>
   </div>
 
-  <div class="block tile">
+  <div class="block tile" data-unavailable="Скоро будет доступна" role="button" tabindex="0" aria-label="Стабилизация выключена">
     <span class="label">Стабилизация</span>
     <div class="options" data-group="stabilize">
       <div class="opt" data-value="true">Да</div>
@@ -912,6 +912,7 @@
     delete saved.rhythm;
     settings = { ...DEFAULTS, ...saved };
   } catch (e) {}
+  settings.stabilize = false;
 
   function saveLocal() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
@@ -919,6 +920,7 @@
 
   // Кнопки выбора: в каждой группе выделен один вариант
   document.querySelectorAll('[data-group]').forEach(group => {
+    if (group.closest('[data-unavailable]')) return;
     const key = group.dataset.group;
     const items = group.querySelectorAll('[data-value]');
     const current = String(settings[key]);
@@ -1238,9 +1240,10 @@
     const items = Array.from(group.querySelectorAll('[data-value]'));
     const label = tile.querySelector('.label').textContent;
     const hintEl = tile.querySelector('.hint');
+    const unavailable = tile.dataset.unavailable;
     const value = document.createElement('div');
     value.className = 'tile-value';
-    value.innerHTML = '<span></span><span class="arrows">↔</span>';
+    value.innerHTML = unavailable ? '<span></span>' : '<span></span><span class="arrows">↔</span>';
     tile.appendChild(value);
     const help = document.createElement('div');
     help.className = 'help';
@@ -1249,9 +1252,20 @@
     help.addEventListener('click', e => {
       e.stopPropagation();
       const text = hintEl ? hintEl.textContent : '';
-      openSheet(label, text || 'Варианты: ' + items.map(i => i.textContent).join(', ') + '.');
+      openSheet(label, unavailable || text || 'Варианты: ' + items.map(i => i.textContent).join(', ') + '.');
     });
+    if (unavailable) {
+      tile.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        tile.click();
+      });
+    }
     tile.addEventListener('click', () => {
+      if (unavailable) {
+        openSheet(label, unavailable);
+        return;
+      }
       // Меняем значение сами: щелчок по скрытой кнопке всплывал обратно в плитку и сбрасывал выбор
       const i = items.findIndex(el => el.dataset.value === String(settings[key]));
       const next = items[(i + 1) % items.length];
@@ -1262,7 +1276,7 @@
     });
     tile._refresh = () => {
       const cur = items.find(el => el.dataset.value === String(settings[key])) || items[0];
-      value.firstChild.textContent = cur.textContent;
+      value.firstChild.textContent = unavailable ? 'Выключена' : cur.textContent;
       tile.classList.toggle('on', cur.dataset.value === 'true' || ((key === 'cover' || key === 'video_cards' || key === 'music' || key === 'checklist' || key === 'vcard_style' || key === 'tint_color') && cur.dataset.value !== 'false'));
       tile.classList.toggle('off-state', cur.dataset.value === 'false');
     };
